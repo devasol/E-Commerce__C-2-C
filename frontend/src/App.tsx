@@ -13,7 +13,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import OrderHistory from './pages/OrderHistory';
+<<<<<<< HEAD
 import Wishlist from './pages/Wishlist';
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminProducts from './pages/Admin/Products';
 import AdminOrders from './pages/Admin/Orders';
@@ -58,11 +61,14 @@ function App() {
                     <Checkout />
                   </PrivateRoute>
                 } />
+<<<<<<< HEAD
                 <Route path="/wishlist" element={
                   <PrivateRoute>
                     <Wishlist />
                   </PrivateRoute>
                 } />
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={

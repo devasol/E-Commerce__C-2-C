@@ -1,26 +1,7 @@
 # Dependency directories
-node_modules
-frontend/node_modules
-backend/node_modules
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-coverage
-.nyc_output
-dist
-build
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.*
-!frontend/.env
-!backend/.env
-npm/
+node_modules/
+frontend/node_modules/
+backend/node_modules/
 
 # Environment variables
 .env
@@ -28,25 +9,18 @@ npm/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode
-.idea
-*.swp
-*.swo
+# Do not ignore specific env files if they exist in frontend/backend
+!frontend/.env
+!backend/.env
 
 # Logs
 *.log
-logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # Runtime data
 pids
@@ -68,17 +42,241 @@ out/
 .next/
 .nuxt/
 target/
+frontend/build/
 
-# Temporary files
-tmp/
-temp/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
 *.tmp
-*.temp
+
+# Cache directories
+.cache/
+frontend/.cache/
+backend/.cache/
+.nyc_output
+.tmp
 
 # Compiled files
-*.css.map
-*.js.map
-tsconfig.tsbuildinfo
+*.o
+*.pyc
+*.class
+*.map
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm global node_modules
+.node_modules
+
+# Temp folder
+temp/
+tmp/
+
+# System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trash-*
+ehthumbs.db
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+coverage-final.json
+
+# Production
+public/uploads/
+
+# Secrets
+config/secrets/*
+
+# Database
+*.db
+*.db-journal
+
+# Environment specific files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Bower dependencies
+bower_components/
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Compodoc dependency documentation (https://compodoc.app/)
+.documentation/
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# Tern
+.tern-port
+.tern-project
+
+# Parcel cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out/
+
+# Nuxt.js build output
+.nuxt
+
+# Gatsby files
+.cache/
+public/static/manifest.json # a Gatsby-generated file
+
+# Vue.js build output
+dist/
+
+# vuepress build output
+.vuepress/dist
+
+# Server files
+.sass-cache
+connect.lock
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suw
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Platform files
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+Icon?
+VolumeIcon.icns
+
+# Temporary folders
+tmp/
+temp/
+
+# Compiled files
+*.dll
+*.class
+*.o
+*.so
+*.dylib
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.rar
+
+# Testing
+coverage/
+istanbul/
+.nyc_output/
+
+# Distribution / packaging
+*.dmg
+*.iso
+*.tar
+*.zip
+
+# Node.js
+npm-debug.log*
+node_modules/
+jspm_packages/
+
+# Yarn
+yarn-error.log*
+.yarn-integrity
+node_modules/
+.yarn-cache
+
+# React Native
+node_modules/
+.run/
+.deriveddata/
+
+# Electron
+release/
+dist/
+
+# Cordova
+platforms/
+plugins/
+www/
+
+# Babel
+.babel.json
+
+# Jest
+coverage/
+*.log
+
+# Webpack
+webpack-stats.json
+
+# ESLint
+.eslintcache
+
+# CoffeeScript
+.coffee_history
+
+# Docker
+.dockerignore
+!docker-compose.yml
+
+# Local development environment
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Sensitive files
 config/
@@ -86,7 +284,124 @@ secrets/
 *.key
 *.pem
 
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
 # Package manager lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+dist/
+out/
+out-tsc/
+
+# Backend specific
+backend/node_modules/
+backend/.cache/
+backend/dist/
+
+# Frontend specific
+frontend/node_modules/
+frontend/.cache/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Debug files
+debug/
+*.stackdump
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Coverage directory used by tools like istanbul
+coverage/
+lib-cov/
+
+# nyc test coverage
+.nyc_output/
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower Components
+bower_components/
+
+# node-waf
+node_waf_bindings/
+
+# Other
+.svn/
+CVS/
+*.diff
+*.patch
+*.orig
+*.bak
+*.swp
+*.swo
+*~
+
+# Lock files
+*.lock
+
+# Cache
+.cache/
+frontend/.cache/
+backend/.cache/
+
+# Compiled JavaScript
+*.js.map
+*.ts.map
+
+# Local configuration files
+local.config.js
+config/local.json
+config/local.js
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Hidden files
+.*.swp
+.*.swo
+.*.tmp
+.*.temp

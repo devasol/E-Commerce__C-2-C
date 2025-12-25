@@ -69,6 +69,7 @@ export const productAPI = {
   getBySeller: (sellerId: string) => api.get(`/products/seller/${sellerId}`),
 };
 
+<<<<<<< HEAD
 // Wishlist API calls
 export const wishlistAPI = {
   get: () => api.get('/wishlist'),
@@ -77,6 +78,8 @@ export const wishlistAPI = {
   clearWishlist: () => api.delete('/wishlist'),
 };
 
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 // Cart API calls
 export const cartAPI = {
   get: () => api.get('/cart'),

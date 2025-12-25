@@ -49,6 +49,7 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
 
     if (!validateForm()) return;
 
@@ -58,12 +59,27 @@ const Checkout: React.FC = () => {
       // Save shipping info to localStorage
       localStorage.setItem('shippingInfo', JSON.stringify(shippingInfo));
 
+=======
+    
+    if (!validateForm()) return;
+    
+    setOrderLoading(true);
+    
+    try {
+      // Save shipping info to localStorage
+      localStorage.setItem('shippingInfo', JSON.stringify(shippingInfo));
+      
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
       // Calculate totals
       const itemsPrice = cartState.totalPrice;
       const taxPrice = parseFloat((itemsPrice * 0.08).toFixed(2));
       const shippingPrice = 5.99;
       const totalPrice = itemsPrice + taxPrice + shippingPrice;
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
       // Prepare order data
       const orderData = {
         orderItems: cartState.items.map((item: any) => ({
@@ -80,21 +96,34 @@ const Checkout: React.FC = () => {
         shippingPrice,
         totalPrice
       };
+<<<<<<< HEAD
 
       // Create order
       const orderResponse = await orderAPI.create(orderData);
       const order = orderResponse.data.data;
 
+=======
+      
+      // Create order
+      const orderResponse = await orderAPI.create(orderData);
+      const order = orderResponse.data.data;
+      
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
       // If payment method is not cash on delivery, process payment
       if (paymentMethod !== 'cash on delivery') {
         // Process payment through Stripe
         const paymentResponse = await paymentAPI.processPayment(totalPrice, order._id);
         const clientSecret = paymentResponse.data.client_secret;
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
         // In a real app, you would use Stripe.js to confirm the payment
         // For now, we'll assume payment is successful
         console.log('Payment client secret:', clientSecret);
       }
+<<<<<<< HEAD
 
       // Clear cart after successful order
       await clearCart();
@@ -104,6 +133,16 @@ const Checkout: React.FC = () => {
     } catch (error: any) {
       console.error('Error creating order:', error);
       alert(error?.message || 'Failed to create order. Please try again.');
+=======
+      
+      // Clear cart after successful order
+      await clearCart();
+      
+      // Redirect to order confirmation
+      navigate(`/order/${order._id}`);
+    } catch (error) {
+      console.error('Error creating order:', error);
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
       setOrderLoading(false);
     }
   };

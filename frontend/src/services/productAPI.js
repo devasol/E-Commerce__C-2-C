@@ -1,6 +1,7 @@
 // services/productAPI.js
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+<<<<<<< HEAD
 // Get the token from localStorage
 const getAuthToken = () => {
   return localStorage.getItem('token');
@@ -17,6 +18,11 @@ export const fetchProductById = async (id) => {
     const response = await fetch(`${API_BASE_URL}/products/${id}`, {
       headers: headers
     });
+=======
+export const fetchProductById = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`);
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -28,6 +34,7 @@ export const fetchProductById = async (id) => {
   }
 };
 
+<<<<<<< HEAD
 export const fetchAllProducts = async (params = {}) => {
   try {
     const queryParams = new URLSearchParams(params);
@@ -38,6 +45,11 @@ export const fetchAllProducts = async (params = {}) => {
     const response = await fetch(url, {
       headers: headers
     });
+=======
+export const fetchAllProducts = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products`);
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

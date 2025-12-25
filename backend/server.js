@@ -22,7 +22,10 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/cart', require('./routes/cart'));
+<<<<<<< HEAD
 app.use('/api/wishlist', require('./routes/wishlist'));
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 app.use('/api/payment', require('./routes/payment'));
 app.use('/api/admin', require('./routes/admin'));
 

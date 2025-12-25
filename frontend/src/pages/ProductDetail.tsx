@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+<<<<<<< HEAD
 import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { wishlistAPI } from '../services/api';
+=======
+import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { useCart } from '../context/CartContext';
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 import ImageWithFallback from '../components/ImageWithFallback';
 import { fetchProductById } from '../services/productAPI';
 
@@ -36,7 +41,10 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [isWishlisted, setIsWishlisted] = useState(false);
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,6 +54,7 @@ const ProductDetail: React.FC = () => {
         const data = await fetchProductById(id);
         setProduct(data);
         document.title = `${data.name} - E-Shop`;
+<<<<<<< HEAD
 
         // Check if product is in wishlist
         try {
@@ -58,6 +67,8 @@ const ProductDetail: React.FC = () => {
           // If user is not authenticated or wishlist doesn't exist, just continue
           setIsWishlisted(false);
         }
+=======
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
       } catch (error) {
         console.error('Error fetching product from API:', error);
         // Fallback to mock data if API fails
@@ -75,6 +86,7 @@ const ProductDetail: React.FC = () => {
     try {
       if (product) {
         await addToCart(product._id, quantity);
+<<<<<<< HEAD
         // Optionally show a success message here
         alert(`${product.name} added to cart successfully!`);
         navigate('/cart');
@@ -104,6 +116,12 @@ const ProductDetail: React.FC = () => {
     } catch (error: any) {
       console.error('Error updating wishlist:', error);
       alert(error?.message || 'Failed to update wishlist. Please try again.');
+=======
+        navigate('/cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
     }
   };
 
@@ -264,14 +282,20 @@ const ProductDetail: React.FC = () => {
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
                   className={`flex items-center px-6 py-3 rounded-lg font-semibold ${
+<<<<<<< HEAD
                     product.stock === 0
                       ? 'bg-gray-400 cursor-not-allowed'
+=======
+                    product.stock === 0 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
                   <FaShoppingCart className="mr-2" />
                   {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
+<<<<<<< HEAD
 
                 <button
                   onClick={toggleWishlist}
@@ -283,6 +307,12 @@ const ProductDetail: React.FC = () => {
                 >
                   {isWishlisted ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
                   {isWishlisted ? 'Wishlisted' : 'Wishlist'}
+=======
+                
+                <button className="flex items-center px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100">
+                  <FaHeart className="mr-2" />
+                  Wishlist
+>>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
                 </button>
               </div>
             </div>
