@@ -216,7 +216,7 @@ const ProductList: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Filters Section */}
         <motion.div
-          className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 border border-gray-100"
+          className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 border border-gray-100 max-w-6xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -237,7 +237,7 @@ const ProductList: React.FC = () => {
             </button>
           </div>
 
-          <div className={`grid grid-cols-1 md:grid-cols-4 gap-6 ${showFilters ? 'block' : 'hidden md:block'}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 ${showFilters ? 'block' : 'hidden md:block'}`}>
             {/* Search Input */}
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -248,7 +248,7 @@ const ProductList: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md"
+                className="w-full pl-10 pr-4 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -257,7 +257,7 @@ const ProductList: React.FC = () => {
             {/* Category Dropdown */}
             <div className="relative group">
               <select
-                className="w-full pr-10 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
+                className="w-full pr-8 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -269,7 +269,7 @@ const ProductList: React.FC = () => {
                 <option value="beauty">Beauty</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400 group-focus-within:text-purple-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4 text-gray-400 group-focus-within:text-purple-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -277,7 +277,7 @@ const ProductList: React.FC = () => {
 
             {/* Price Range */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
+              <div className="flex justify-between text-xs text-gray-600">
                 <span className="font-medium">${priceRange[0]}</span>
                 <span className="font-medium">${priceRange[1]}</span>
               </div>
@@ -288,7 +288,7 @@ const ProductList: React.FC = () => {
                   max="500"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gradient-to-r accent-from-blue-500 accent-to-purple-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-purple-600 [&::-webkit-slider-thumb]:cursor-pointer"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gradient-to-r accent-from-blue-500 accent-to-purple-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-purple-600 [&::-webkit-slider-thumb]:cursor-pointer"
                 />
               </div>
             </div>
@@ -296,7 +296,7 @@ const ProductList: React.FC = () => {
             {/* Sort Dropdown */}
             <div className="relative group">
               <select
-                className="w-full pr-10 py-3 bg-white border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
+                className="w-full pr-8 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -306,7 +306,7 @@ const ProductList: React.FC = () => {
                 <option value="rating">Top Rated</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
