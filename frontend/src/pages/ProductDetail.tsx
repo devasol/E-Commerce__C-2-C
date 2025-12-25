@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import ImageWithFallback from '../components/ImageWithFallback';
+import { fetchProductById } from '../services/productAPI';
 
 // Mock data for a product
 const mockProduct = {
@@ -11,10 +13,10 @@ const mockProduct = {
   description: 'Experience premium sound quality with these wireless Bluetooth headphones. Featuring noise cancellation, long battery life, and comfortable over-ear design for extended listening sessions.',
   price: 99.99,
   images: [
-    'https://via.placeholder.com/600x600',
-    'https://via.placeholder.com/600x600',
-    'https://via.placeholder.com/600x600',
-    'https://via.placeholder.com/600x600'
+    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600',
+    'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600',
+    'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=600',
+    'https://images.unsplash.com/photo-1546813788-4a1a2f7c9f87?auto=format&fit=crop&w=600'
   ],
   ratings: { average: 4.5, count: 120 },
   discount: 10,
@@ -35,12 +37,24 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call to get product details
-    setTimeout(() => {
-      setProduct(mockProduct);
-      setLoading(false);
-      document.title = `${mockProduct.name} - E-Shop`;
-    }, 1000);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch from API first
+        const data = await fetchProductById(id);
+        setProduct(data);
+        document.title = `${data.name} - E-Shop`;
+      } catch (error) {
+        console.error('Error fetching product from API:', error);
+        // Fallback to mock data if API fails
+        setProduct(mockProduct);
+        document.title = `${mockProduct.name} - E-Shop`;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
   const handleAddToCart = async () => {
@@ -106,9 +120,9 @@ const ProductDetail: React.FC = () => {
           {/* Product Images */}
           <div>
             <div className="mb-4">
-              <img 
-                src={product.images[selectedImage]} 
-                alt={product.name} 
+              <ImageWithFallback
+                src={product.images[selectedImage]}
+                alt={product.name}
                 className="w-full h-96 object-contain rounded-lg"
               />
             </div>
@@ -122,9 +136,9 @@ const ProductDetail: React.FC = () => {
                     selectedImage === index ? 'border-blue-500 border-2' : 'border-gray-300'
                   }`}
                 >
-                  <img 
-                    src={img} 
-                    alt={`${product.name} ${index + 1}`} 
+                  <ImageWithFallback
+                    src={img}
+                    alt={`${product.name} ${index + 1}`}
                     className="w-full h-20 object-cover"
                   />
                 </button>
@@ -254,7 +268,12 @@ const ProductDetail: React.FC = () => {
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-6">Related Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockProduct.images.slice(0, 4).map((img, index) => (
+          {[
+            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
+            'https://images.unsplash.com/photo-1554982338-30eec5d015b7?auto=format&fit=crop&w=500',
+            'https://images.unsplash.com/photo-1593305841991-0173b693e8d4?auto=format&fit=crop&w=500',
+            'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=500'
+          ].map((img, index) => (
             <motion.div
               key={index}
               className="bg-white rounded-lg shadow-md overflow-hidden product-card"
@@ -264,7 +283,7 @@ const ProductDetail: React.FC = () => {
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <img src={img} alt={`Related product ${index + 1}`} className="h-full w-full object-contain" />
+                <ImageWithFallback src={img} alt={`Related product ${index + 1}`} className="h-full w-full object-contain" />
               </div>
               <div className="p-4">
                 <h3 className="font-semibold mb-2">Related Product {index + 1}</h3>

@@ -1,81 +1,162 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaRegStar, FaStarHalfAlt, FaFilter, FaSlidersH } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaStarHalfAlt, FaFilter, FaSlidersH, FaEye, FaTimes } from 'react-icons/fa';
+import ImageWithFallback from '../components/ImageWithFallback';
 
 // Mock data for products
 const mockProducts = [
   {
     _id: '1',
     name: 'Wireless Bluetooth Headphones',
+    description: 'Experience premium sound quality with these wireless Bluetooth headphones. Featuring noise cancellation, long battery life, and comfortable over-ear design for extended listening sessions.',
     price: 99.99,
-    images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1546813788-4a1a2f7c9f87?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.5, count: 120 },
     discount: 10,
-    stock: 25
+    stock: 25,
+    brand: 'AudioTech',
+    category: 'Electronics',
+    subcategory: 'Headphones',
+    tags: ['wireless', 'bluetooth', 'noise-cancelling', 'premium']
   },
   {
     _id: '2',
     name: 'Smart Watch Series 5',
+    description: 'Stay connected with this advanced smartwatch. Features heart rate monitoring, GPS, water resistance, and a vibrant display that works in bright sunlight.',
     price: 199.99,
-    images: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1593305841991-0173b693e8d4?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.2, count: 85 },
     discount: 15,
-    stock: 10
+    stock: 10,
+    brand: 'TechWear',
+    category: 'Electronics',
+    subcategory: 'Wearables',
+    tags: ['smartwatch', 'fitness', 'health', 'GPS']
   },
   {
     _id: '3',
     name: 'Laptop Backpack',
+    description: 'Durable and spacious backpack designed for laptops up to 15.6 inches. Features multiple compartments, water bottle holder, and padded laptop sleeve.',
     price: 49.99,
-    images: ['https://images.unsplash.com/photo-1554982338-30eec5d015b7?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1554982338-30eec5d015b7?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.7, count: 210 },
     discount: 5,
-    stock: 50
+    stock: 50,
+    brand: 'TravelPro',
+    category: 'Fashion',
+    subcategory: 'Bags',
+    tags: ['backpack', 'laptop', 'travel', 'durable']
   },
   {
     _id: '4',
     name: 'Wireless Charging Pad',
+    description: 'Fast wireless charging pad compatible with all Qi-enabled devices. Features foreign object detection and over-temperature protection.',
     price: 29.99,
-    images: ['https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.0, count: 65 },
     discount: 0,
-    stock: 100
+    stock: 100,
+    brand: 'ChargeTech',
+    category: 'Electronics',
+    subcategory: 'Chargers',
+    tags: ['wireless', 'charger', 'fast', 'Qi']
   },
   {
     _id: '5',
     name: 'Noise Cancelling Earbuds',
+    description: 'True wireless earbuds with active noise cancellation. 24-hour battery life, water-resistant, and perfect for workouts and travel.',
     price: 79.99,
-    images: ['https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.8, count: 180 },
     discount: 20,
-    stock: 15
+    stock: 15,
+    brand: 'AudioTech',
+    category: 'Electronics',
+    subcategory: 'Earbuds',
+    tags: ['wireless', 'earbuds', 'noise-cancelling', 'water-resistant']
   },
   {
     _id: '6',
     name: 'Gaming Mouse RGB',
+    description: 'High-precision gaming mouse with customizable RGB lighting, programmable buttons, and adjustable DPI settings for optimal performance.',
     price: 59.99,
-    images: ['https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.3, count: 90 },
     discount: 0,
-    stock: 30
+    stock: 30,
+    brand: 'GamePro',
+    category: 'Electronics',
+    subcategory: 'Accessories',
+    tags: ['gaming', 'mouse', 'RGB', 'programmable']
   },
   {
     _id: '7',
     name: '4K Ultra HD Smart TV',
+    description: 'Immerse yourself in stunning 4K resolution with HDR technology. Built-in streaming apps, voice control, and sleek design.',
     price: 599.99,
-    images: ['https://images.unsplash.com/photo-1593305841991-0173b693e8d4?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1593305841991-0173b693e8d4?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.6, count: 150 },
     discount: 25,
-    stock: 8
+    stock: 8,
+    brand: 'VisionTech',
+    category: 'Electronics',
+    subcategory: 'TVs',
+    tags: ['4K', 'smart TV', 'HDR', 'streaming']
   },
   {
     _id: '8',
     name: 'Wireless Keyboard',
+    description: 'Ergonomic wireless keyboard with quiet keys, long battery life, and compatibility with multiple devices via Bluetooth.',
     price: 79.99,
-    images: ['https://images.unsplash.com/photo-1546813788-4a1a2f7c9f87?auto=format&fit=crop&w=500'],
+    images: [
+      'https://images.unsplash.com/photo-1546813788-4a1a2f7c9f87?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
+      'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=500'
+    ],
     ratings: { average: 4.4, count: 75 },
     discount: 12,
-    stock: 40
+    stock: 40,
+    brand: 'TypePro',
+    category: 'Electronics',
+    subcategory: 'Accessories',
+    tags: ['wireless', 'keyboard', 'ergonomic', 'Bluetooth']
   }
 ];
 
@@ -88,6 +169,9 @@ const ProductList: React.FC = () => {
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('featured');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Animation variants
   const containerVariants = {
@@ -175,6 +259,17 @@ const ProductList: React.FC = () => {
     }
 
     return <div className="flex">{stars}</div>;
+  };
+
+  const handleViewProduct = (product: any) => {
+    setSelectedProduct(product);
+    setSelectedImageIndex(0); // Reset to first image
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
   };
 
   if (loading) {
@@ -364,7 +459,7 @@ const ProductList: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative">
-                  <img
+                  <ImageWithFallback
                     src={product.images[0]}
                     alt={product.name}
                     className="w-full h-56 object-cover transition-transform duration-500 hover:scale-110"
@@ -405,14 +500,23 @@ const ProductList: React.FC = () => {
                       )}
                     </div>
 
-                    <Link
-                      to={`/product/${product._id}`}
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 transition-colors duration-300"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                      </svg>
-                    </Link>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleViewProduct(product)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 transition-colors duration-300"
+                        title="View Details"
+                      >
+                        <FaEye className="h-5 w-5" />
+                      </button>
+                      <Link
+                        to={`/product/${product._id}`}
+                        className="bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 transition-colors duration-300"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -420,6 +524,136 @@ const ProductList: React.FC = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Product Detail Modal */}
+      {showModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedProduct.name}</h2>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <ImageWithFallback
+                    src={selectedProduct.images[selectedImageIndex]}
+                    alt={selectedProduct.name}
+                    className="w-full h-64 object-contain rounded-lg mb-4"
+                  />
+                  {selectedProduct.images.length > 1 && (
+                    <div className="flex space-x-2 overflow-x-auto pb-2">
+                      {selectedProduct.images.map((img: string, index: number) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedImageIndex(index)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 ${
+                            selectedImageIndex === index ? 'border-blue-500' : 'border-gray-300'
+                          }`}
+                        >
+                          <ImageWithFallback
+                            src={img}
+                            alt={`${selectedProduct.name} ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="mb-4">
+                    <div className="flex items-center mb-2">
+                      {renderRating(selectedProduct.ratings.average)}
+                      <span className="text-gray-600 ml-2">({selectedProduct.ratings.count} reviews)</span>
+                    </div>
+
+                    <div className="flex items-center mb-4">
+                      {selectedProduct.discount > 0 ? (
+                        <div className="flex items-center">
+                          <span className="text-2xl font-bold text-red-600">
+                            ${(selectedProduct.price * (1 - selectedProduct.discount / 100)).toFixed(2)}
+                          </span>
+                          <span className="text-gray-500 line-through ml-2">
+                            ${selectedProduct.price.toFixed(2)}
+                          </span>
+                          <span className="bg-red-100 text-red-800 text-sm font-semibold ml-2 px-2 py-1 rounded">
+                            {selectedProduct.discount}% OFF
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-2xl font-bold text-blue-600">${selectedProduct.price.toFixed(2)}</span>
+                      )}
+                    </div>
+
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-lg">Description:</h3>
+                      <p className="text-gray-700">{selectedProduct.description}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <div>
+                        <span className="text-gray-600">Brand: </span>
+                        <span className="font-semibold">{selectedProduct.brand}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Category: </span>
+                        <span className="font-semibold">{selectedProduct.category}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Subcategory: </span>
+                        <span className="font-semibold">{selectedProduct.subcategory}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Availability: </span>
+                        <span className={selectedProduct.stock > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                          {selectedProduct.stock > 0 ? `${selectedProduct.stock} in stock` : 'Out of stock'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <span className="text-gray-600">Tags: </span>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedProduct.tags.map((tag: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <Link
+                      to={`/product/${selectedProduct._id}`}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-3 rounded-lg font-semibold transition-colors duration-300"
+                    >
+                      View Full Details
+                    </Link>
+                    <button
+                      onClick={closeModal}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold transition-colors duration-300"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
