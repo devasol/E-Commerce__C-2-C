@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaRegStar, FaStarHalfAlt, FaFilter, FaSlidersH, FaEye, FaTimes } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaStarHalfAlt, FaFilter, FaSlidersH, FaEye, FaTimes, FaHeart, FaRegHeart } from 'react-icons/fa';
 import ImageWithFallback from '../components/ImageWithFallback';
+import { productAPI, wishlistAPI } from '../services/api';
 
 // Mock data for products
 const mockProducts = [
@@ -172,6 +173,8 @@ const ProductList: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
   // Animation variants
   const containerVariants = {
@@ -196,26 +199,56 @@ const ProductList: React.FC = () => {
   };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      setFilteredProducts(products);
-    }, 1000);
-  }, []);
+    // Get search term from URL params
+    const searchFromUrl = searchParams.get('search') || '';
+    setSearchTerm(searchFromUrl);
+
+    // Fetch products from API
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await productAPI.getAll({ search: searchFromUrl });
+        setProducts(response.data.data);
+        setFilteredProducts(response.data.data);
+
+        // Load wishlist items
+        try {
+          const wishlistRes = await wishlistAPI.get();
+          const wishlistIds = new Set<string>(wishlistRes.data.data.items.map((item: any) => item.product));
+          setWishlistItems(wishlistIds);
+        } catch (err) {
+          // If user is not authenticated or wishlist doesn't exist, just continue
+          setWishlistItems(new Set<string>());
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Fallback to mock data if API fails
+        setProducts(mockProducts);
+        setFilteredProducts(mockProducts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [searchParams]);
 
   useEffect(() => {
     let result = [...products];
 
-    // Filter by search term
+    // Filter by search term (from URL or local state)
     if (searchTerm) {
       result = result.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
     // Filter by category (simplified)
     if (category !== 'all') {
-      // In a real app, you would filter by actual categories
+      result = result.filter(product =>
+        product.category.toLowerCase().includes(category.toLowerCase())
+      );
     }
 
     // Filter by price range
@@ -243,6 +276,17 @@ const ProductList: React.FC = () => {
     setFilteredProducts(result);
   }, [searchTerm, category, priceRange, sortBy, products]);
 
+  // Update URL when search term changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    } else {
+      params.delete('search');
+    }
+    setSearchParams(params);
+  }, [searchTerm, setSearchParams]);
+
   const renderRating = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -265,6 +309,31 @@ const ProductList: React.FC = () => {
     setSelectedProduct(product);
     setSelectedImageIndex(0); // Reset to first image
     setShowModal(true);
+  };
+
+  const toggleWishlist = async (productId: string) => {
+    try {
+      if (wishlistItems.has(productId)) {
+        // Remove from wishlist
+        await wishlistAPI.removeFromWishlist(productId);
+        setWishlistItems(prev => {
+          const newSet = new Set<string>(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
+      } else {
+        // Add to wishlist
+        await wishlistAPI.addToWishlist(productId);
+        setWishlistItems(prev => {
+          const newSet = new Set<string>(prev);
+          newSet.add(productId);
+          return newSet;
+        });
+      }
+    } catch (error: any) {
+      console.error('Error updating wishlist:', error);
+      alert(error?.message || 'Failed to update wishlist. Please try again.');
+    }
   };
 
   const closeModal = () => {
@@ -311,20 +380,18 @@ const ProductList: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Filters Section */}
         <motion.div
-          className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl shadow-lg p-6 border border-gray-100 max-w-6xl mx-auto"
+          className="mb-8 bg-white rounded-xl shadow-md p-6 max-w-6xl mx-auto border border-gray-200"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg mr-3">
-                <FaFilter className="text-white text-xl" />
-              </div>
+              <FaFilter className="text-blue-600 text-xl mr-3" />
               <h2 className="text-xl font-bold text-gray-900">Filters</h2>
             </div>
             <button
-              className="md:hidden bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-300 transform hover:scale-105"
+              className="md:hidden bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors duration-300"
               onClick={() => setShowFilters(!showFilters)}
             >
               <FaSlidersH className="mr-2" />
@@ -334,25 +401,23 @@ const ProductList: React.FC = () => {
 
           <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 ${showFilters ? 'block' : 'hidden md:block'}`}>
             {/* Search Input */}
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400 transition-colors duration-300 group-focus-within:text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
 
             {/* Category Dropdown */}
-            <div className="relative group">
+            <div className="relative">
               <select
-                className="w-full pr-8 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
+                className="w-full pr-8 py-2 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 appearance-none"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -363,11 +428,9 @@ const ProductList: React.FC = () => {
                 <option value="sports">Sports</option>
                 <option value="beauty">Beauty</option>
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400 group-focus-within:text-purple-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
 
             {/* Price Range */}
@@ -376,22 +439,22 @@ const ProductList: React.FC = () => {
                 <span className="font-medium">${priceRange[0]}</span>
                 <span className="font-medium">${priceRange[1]}</span>
               </div>
-              <div className="relative pt-1">
+              <div className="pt-1">
                 <input
                   type="range"
                   min="0"
                   max="500"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-gradient-to-r accent-from-blue-500 accent-to-purple-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-purple-600 [&::-webkit-slider-thumb]:cursor-pointer"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600 [&::-webkit-slider-thumb]:cursor-pointer"
                 />
               </div>
             </div>
 
             {/* Sort Dropdown */}
-            <div className="relative group">
+            <div className="relative">
               <select
-                className="w-full pr-8 py-2 bg-white border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 shadow-sm focus:shadow-md appearance-none"
+                className="w-full pr-8 py-2 bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 appearance-none"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -400,11 +463,9 @@ const ProductList: React.FC = () => {
                 <option value="price-high">Price: High to Low</option>
                 <option value="rating">Top Rated</option>
               </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </div>
         </motion.div>
@@ -507,6 +568,17 @@ const ProductList: React.FC = () => {
                         title="View Details"
                       >
                         <FaEye className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => toggleWishlist(product._id)}
+                        className={`rounded-full p-2 transition-colors duration-300 ${
+                          wishlistItems.has(product._id)
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                        title={wishlistItems.has(product._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                      >
+                        {wishlistItems.has(product._id) ? <FaHeart className="h-5 w-5" /> : <FaRegHeart className="h-5 w-5" />}
                       </button>
                       <Link
                         to={`/product/${product._id}`}

@@ -78,7 +78,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'ADD_TO_CART', payload: res.data.data });
     } catch (err: any) {
       dispatch({ type: 'SET_LOADING', payload: false });
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -89,7 +89,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'REMOVE_FROM_CART', payload: res.data.data });
     } catch (err: any) {
       dispatch({ type: 'SET_LOADING', payload: false });
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -100,7 +100,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'UPDATE_CART', payload: res.data.data });
     } catch (err: any) {
       dispatch({ type: 'SET_LOADING', payload: false });
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -111,7 +111,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'CLEAR_CART', payload: res.data.data });
     } catch (err: any) {
       dispatch({ type: 'SET_LOADING', payload: false });
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 

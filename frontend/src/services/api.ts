@@ -69,6 +69,14 @@ export const productAPI = {
   getBySeller: (sellerId: string) => api.get(`/products/seller/${sellerId}`),
 };
 
+// Wishlist API calls
+export const wishlistAPI = {
+  get: () => api.get('/wishlist'),
+  addToWishlist: (productId: string) => api.post('/wishlist', { productId }),
+  removeFromWishlist: (productId: string) => api.delete(`/wishlist/${productId}`),
+  clearWishlist: () => api.delete('/wishlist'),
+};
+
 // Cart API calls
 export const cartAPI = {
   get: () => api.get('/cart'),

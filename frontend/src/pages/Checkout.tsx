@@ -49,21 +49,21 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setOrderLoading(true);
-    
+
     try {
       // Save shipping info to localStorage
       localStorage.setItem('shippingInfo', JSON.stringify(shippingInfo));
-      
+
       // Calculate totals
       const itemsPrice = cartState.totalPrice;
       const taxPrice = parseFloat((itemsPrice * 0.08).toFixed(2));
       const shippingPrice = 5.99;
       const totalPrice = itemsPrice + taxPrice + shippingPrice;
-      
+
       // Prepare order data
       const orderData = {
         orderItems: cartState.items.map((item: any) => ({
@@ -80,29 +80,30 @@ const Checkout: React.FC = () => {
         shippingPrice,
         totalPrice
       };
-      
+
       // Create order
       const orderResponse = await orderAPI.create(orderData);
       const order = orderResponse.data.data;
-      
+
       // If payment method is not cash on delivery, process payment
       if (paymentMethod !== 'cash on delivery') {
         // Process payment through Stripe
         const paymentResponse = await paymentAPI.processPayment(totalPrice, order._id);
         const clientSecret = paymentResponse.data.client_secret;
-        
+
         // In a real app, you would use Stripe.js to confirm the payment
         // For now, we'll assume payment is successful
         console.log('Payment client secret:', clientSecret);
       }
-      
+
       // Clear cart after successful order
       await clearCart();
-      
+
       // Redirect to order confirmation
       navigate(`/order/${order._id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating order:', error);
+      alert(error?.message || 'Failed to create order. Please try again.');
       setOrderLoading(false);
     }
   };

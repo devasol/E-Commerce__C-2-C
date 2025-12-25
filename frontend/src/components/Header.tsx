@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, FaHeart } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { wishlistAPI } from '../services/api';
 
 const Header: React.FC = () => {
   const { state: authState, logout } = useAuth();
@@ -10,6 +11,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [wishlistCount, setWishlistCount] = React.useState(0);
 
   const handleLogout = () => {
     logout();
@@ -19,10 +21,27 @@ const Header: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // In a real app, this would navigate to search results
-      console.log('Searching for:', searchQuery);
+      // Navigate to search results page
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  useEffect(() => {
+    const loadWishlistCount = async () => {
+      if (authState.isAuthenticated) {
+        try {
+          const response = await wishlistAPI.get();
+          setWishlistCount(response.data.data.items.length);
+        } catch (error) {
+          setWishlistCount(0);
+        }
+      } else {
+        setWishlistCount(0);
+      }
+    };
+
+    loadWishlistCount();
+  }, [authState.isAuthenticated]);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -83,9 +102,17 @@ const Header: React.FC = () => {
           {/* Right side - Auth and Cart */}
           <div className="flex items-center space-x-4">
             {/* Wishlist */}
-            <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300">
+            <Link
+              to="/wishlist"
+              className="flex items-center justify-center relative w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300"
+            >
               <FaHeart className="text-gray-600" />
-            </div>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart */}
             <Link

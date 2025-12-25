@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
 import { fetchProductById } from '../services/productAPI';
 
@@ -35,6 +36,7 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -44,6 +46,18 @@ const ProductDetail: React.FC = () => {
         const data = await fetchProductById(id);
         setProduct(data);
         document.title = `${data.name} - E-Shop`;
+
+        // Check if product is in wishlist
+        try {
+          const wishlistRes = await wishlistAPI.get();
+          const isInWishlist = wishlistRes.data.data.items.some(
+            (item: any) => item.product === id
+          );
+          setIsWishlisted(isInWishlist);
+        } catch (err) {
+          // If user is not authenticated or wishlist doesn't exist, just continue
+          setIsWishlisted(false);
+        }
       } catch (error) {
         console.error('Error fetching product from API:', error);
         // Fallback to mock data if API fails
@@ -61,10 +75,35 @@ const ProductDetail: React.FC = () => {
     try {
       if (product) {
         await addToCart(product._id, quantity);
+        // Optionally show a success message here
+        alert(`${product.name} added to cart successfully!`);
         navigate('/cart');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding to cart:', error);
+      // Show error message to user
+      alert(error?.message || 'Failed to add item to cart. Please try again.');
+    }
+  };
+
+  const toggleWishlist = async () => {
+    if (!product) return;
+
+    try {
+      if (isWishlisted) {
+        // Remove from wishlist
+        await wishlistAPI.removeFromWishlist(product._id);
+        setIsWishlisted(false);
+        alert('Removed from wishlist!');
+      } else {
+        // Add to wishlist
+        await wishlistAPI.addToWishlist(product._id);
+        setIsWishlisted(true);
+        alert('Added to wishlist!');
+      }
+    } catch (error: any) {
+      console.error('Error updating wishlist:', error);
+      alert(error?.message || 'Failed to update wishlist. Please try again.');
     }
   };
 
@@ -225,18 +264,25 @@ const ProductDetail: React.FC = () => {
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
                   className={`flex items-center px-6 py-3 rounded-lg font-semibold ${
-                    product.stock === 0 
-                      ? 'bg-gray-400 cursor-not-allowed' 
+                    product.stock === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
                   <FaShoppingCart className="mr-2" />
                   {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
-                
-                <button className="flex items-center px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-100">
-                  <FaHeart className="mr-2" />
-                  Wishlist
+
+                <button
+                  onClick={toggleWishlist}
+                  className={`flex items-center px-6 py-3 border rounded-lg font-semibold ${
+                    isWishlisted
+                      ? 'bg-red-100 text-red-600 border-red-300'
+                      : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                  }`}
+                >
+                  {isWishlisted ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+                  {isWishlisted ? 'Wishlisted' : 'Wishlist'}
                 </button>
               </div>
             </div>

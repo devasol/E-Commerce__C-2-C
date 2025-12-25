@@ -16,8 +16,10 @@ const Cart: React.FC = () => {
   const handleRemoveItem = async (productId: string) => {
     try {
       await removeFromCart(productId);
-    } catch (error) {
+      // Optionally show a success message
+    } catch (error: any) {
       console.error('Error removing item from cart:', error);
+      alert(error?.message || 'Failed to remove item from cart. Please try again.');
     }
   };
 
@@ -26,11 +28,12 @@ const Cart: React.FC = () => {
       await handleRemoveItem(productId);
       return;
     }
-    
+
     try {
       await updateQuantity(productId, newQuantity);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating quantity:', error);
+      alert(error?.message || 'Failed to update quantity. Please try again.');
     }
   };
 

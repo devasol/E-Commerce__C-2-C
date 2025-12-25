@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return res.data;
     } catch (err: any) {
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -132,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return res.data;
     } catch (err: any) {
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -147,7 +147,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'USER_UPDATE', payload: res.data.data });
       return res.data;
     } catch (err: any) {
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 
@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await authAPI.updatePassword({ currentPassword, newPassword });
       return res.data;
     } catch (err: any) {
-      throw err.response.data;
+      throw err?.response?.data || err;
     }
   };
 

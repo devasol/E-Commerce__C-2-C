@@ -21,7 +21,7 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setError(err?.message || 'Login failed. Please check your credentials and try again.');
     } finally {
       setLoading(false);
     }

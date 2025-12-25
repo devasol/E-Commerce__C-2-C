@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import OrderHistory from './pages/OrderHistory';
+import Wishlist from './pages/Wishlist';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminProducts from './pages/Admin/Products';
 import AdminOrders from './pages/Admin/Orders';
@@ -55,6 +56,11 @@ function App() {
                 <Route path="/checkout" element={
                   <PrivateRoute>
                     <Checkout />
+                  </PrivateRoute>
+                } />
+                <Route path="/wishlist" element={
+                  <PrivateRoute>
+                    <Wishlist />
                   </PrivateRoute>
                 } />
 
