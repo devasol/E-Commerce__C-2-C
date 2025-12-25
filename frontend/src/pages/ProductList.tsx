@@ -548,18 +548,21 @@ const ProductList: React.FC = () => {
                     className="w-full h-64 object-contain rounded-lg mb-4"
                   />
                   {selectedProduct.images.length > 1 && (
-                    <div className="flex space-x-2 overflow-x-auto pb-2">
+                    <div className="flex space-x-2 overflow-x-auto pb-2 pt-1">
                       {selectedProduct.images.map((img: string, index: number) => (
                         <button
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
-                          className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 ${
-                            selectedImageIndex === index ? 'border-blue-500' : 'border-gray-300'
+                          className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all duration-200 ${
+                            selectedImageIndex === index
+                              ? 'border-blue-500 ring-2 ring-blue-300 scale-105'
+                              : 'border-gray-300 hover:border-blue-400'
                           }`}
+                          aria-label={`View image ${index + 1} of ${selectedProduct.name}`}
                         >
                           <ImageWithFallback
                             src={img}
-                            alt={`${selectedProduct.name} ${index + 1}`}
+                            alt={`${selectedProduct.name} thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                         </button>

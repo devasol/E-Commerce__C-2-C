@@ -132,13 +132,16 @@ const ProductDetail: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`border rounded-lg overflow-hidden ${
-                    selectedImage === index ? 'border-blue-500 border-2' : 'border-gray-300'
+                  className={`border rounded-lg overflow-hidden transition-all duration-200 ${
+                    selectedImage === index
+                      ? 'border-blue-500 border-2 ring-2 ring-blue-300 scale-105'
+                      : 'border-gray-300 hover:border-blue-400'
                   }`}
+                  aria-label={`View image ${index + 1} of ${product.name}`}
                 >
                   <ImageWithFallback
                     src={img}
-                    alt={`${product.name} ${index + 1}`}
+                    alt={`${product.name} thumbnail ${index + 1}`}
                     className="w-full h-20 object-cover"
                   />
                 </button>
