@@ -1,17 +1,9 @@
-<<<<<<< HEAD
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { wishlistAPI } from '../services/api';
-=======
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaUser, FaBars, FaTimes, FaSearch, FaHeart } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
->>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 
 const Header: React.FC = () => {
   const { state: authState, logout } = useAuth();
@@ -19,10 +11,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
-<<<<<<< HEAD
   const [wishlistCount, setWishlistCount] = React.useState(0);
-=======
->>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 
   const handleLogout = () => {
     logout();
@@ -32,7 +21,6 @@ const Header: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-<<<<<<< HEAD
       // Navigate to search results page
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
     }
@@ -54,14 +42,6 @@ const Header: React.FC = () => {
 
     loadWishlistCount();
   }, [authState.isAuthenticated]);
-
-=======
-      // In a real app, this would navigate to search results
-      console.log('Searching for:', searchQuery);
-    }
-  };
-
->>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       {/* Top bar */}
@@ -121,7 +101,6 @@ const Header: React.FC = () => {
           {/* Right side - Auth and Cart */}
           <div className="flex items-center space-x-4">
             {/* Wishlist */}
-<<<<<<< HEAD
             <Link
               to="/wishlist"
               className="flex items-center justify-center relative w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300"
@@ -133,11 +112,6 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-=======
-            <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-300">
-              <FaHeart className="text-gray-600" />
-            </div>
->>>>>>> 6281576513cf78cfbb928bd30123346a6cb2908d
 
             {/* Cart */}
             <Link

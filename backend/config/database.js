@@ -5,6 +5,7 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      // Remove deprecated options for newer mongoose versions
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
