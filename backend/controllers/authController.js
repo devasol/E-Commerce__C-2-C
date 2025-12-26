@@ -126,7 +126,22 @@ exports.logout = async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = async (req, res, next) => {
+  // The middleware should ensure req.user exists, but we'll double check
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized, user not found'
+    });
+  }
+
   const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
 
   res.status(200).json({
     success: true,
@@ -139,6 +154,14 @@ exports.getMe = async (req, res, next) => {
 // @access  Private
 exports.updateDetails = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     const fieldsToUpdate = {
       name: req.body.name,
       email: req.body.email
@@ -148,6 +171,13 @@ exports.updateDetails = async (req, res, next) => {
       new: true,
       runValidators: true
     });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -166,8 +196,23 @@ exports.updateDetails = async (req, res, next) => {
 // @access  Private
 exports.updatePassword = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     // Find user by ID and select password field
     const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     // Check current password
     if (!(await user.matchPassword(req.body.currentPassword))) {

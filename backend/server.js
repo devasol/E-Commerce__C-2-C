@@ -27,7 +27,16 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/cart', require('./routes/cart'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/payment', require('./routes/payment'));
+app.use('/api/messages', require('./routes/messages'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/receipt', require('./routes/receipt'));
+app.use('/api/checkout', require('./routes/checkout'));
+
+// Specific route to handle order confirmation - redirect to success message with receipt
+app.get('/order/:orderId', (req, res) => {
+  // Redirect to the message API to show success message and auto-download receipt
+  res.redirect(`/api/messages?type=success&message=Your+order+was+placed+successfully&orderId=${req.params.orderId}`);
+});
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

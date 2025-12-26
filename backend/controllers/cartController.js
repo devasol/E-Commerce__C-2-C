@@ -7,6 +7,14 @@ const ErrorResponse = require('../utils/errorResponse');
 // @access    Private
 exports.getCart = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     const cart = await Cart.findOne({ user: req.user.id }).populate({
       path: 'items.product',
       select: 'name price images'
@@ -40,6 +48,14 @@ exports.getCart = async (req, res, next) => {
 // @access    Private
 exports.addToCart = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     const { productId, quantity } = req.body;
 
     // Check if product exists
@@ -66,7 +82,7 @@ exports.addToCart = async (req, res, next) => {
     }
 
     // Check if product already in cart
-    const existingItemIndex = cart.items.findIndex(item => 
+    const existingItemIndex = cart.items.findIndex(item =>
       item.product.toString() === productId
     );
 
@@ -111,6 +127,14 @@ exports.addToCart = async (req, res, next) => {
 // @access    Private
 exports.updateCart = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     const { productId, quantity } = req.body;
 
     const cart = await Cart.findOne({ user: req.user.id });
@@ -137,7 +161,7 @@ exports.updateCart = async (req, res, next) => {
       });
     }
 
-    const itemIndex = cart.items.findIndex(item => 
+    const itemIndex = cart.items.findIndex(item =>
       item.product.toString() === productId
     );
 
@@ -258,6 +282,138 @@ exports.clearCart = async (req, res, next) => {
     res.status(400).json({
       success: false,
       message: error.message
+    });
+  }
+};
+
+// @desc      Checkout - Create order from cart
+// @route     POST /api/cart/checkout
+// @access    Private
+exports.checkout = async (req, res, next) => {
+  try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
+    const { shippingAddress, paymentMethod } = req.body;
+
+    // Validate required fields
+    if (!shippingAddress) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shipping address is required'
+      });
+    }
+
+    if (!paymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment method is required'
+      });
+    }
+
+    // Get user's cart
+    const cart = await Cart.findOne({ user: req.user.id }).populate({
+      path: 'items.product',
+      select: 'name price images stock sold'
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cart is empty'
+      });
+    }
+
+    // Validate stock for all items in cart
+    for (const item of cart.items) {
+      if (item.product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${item.product.stock} ${item.product.name} available in stock`
+        });
+      }
+    }
+
+    // Calculate prices
+    const itemsPrice = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const taxPrice = parseFloat((itemsPrice * 0.15).toFixed(2)); // 15% tax
+    const shippingPrice = 0; // Free shipping for now, can be calculated based on location
+    const totalPrice = itemsPrice + taxPrice + shippingPrice;
+
+    // Create order items array
+    const orderItems = cart.items.map(item => ({
+      product: item.product._id,
+      name: item.product.name,
+      quantity: item.quantity,
+      price: item.price,
+      image: item.product.images ? item.product.images[0] : null
+    }));
+
+    // Create order
+    const Order = require('../models/Order');
+    const order = await Order.create({
+      orderItems,
+      user: req.user.id,
+      shippingAddress,
+      paymentMethod,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      isPaid: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking', // Mark as paid for COD and mobile banking
+      paidAt: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking' ? Date.now() : undefined
+    });
+
+    // Update product stock
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product._id);
+      if (product) {
+        product.stock -= item.quantity;
+        product.sold += item.quantity;
+        await product.save();
+      }
+    }
+
+    // Clear the cart after successful order creation
+    cart.items = [];
+    cart.totalItems = 0;
+    cart.totalPrice = 0;
+    await cart.save();
+
+    // Send order confirmation email
+    const User = require('../models/User');
+    const { sendOrderConfirmationEmail } = require('../utils/sendEmail');
+
+    const user = await User.findById(req.user.id);
+    if (user) {
+      try {
+        await sendOrderConfirmationEmail(user, order);
+      } catch (emailError) {
+        console.error('Error sending order confirmation email:', emailError);
+        // Don't fail the order creation if email fails
+      }
+    }
+
+    // For successful checkout, send the order data with receipt URLs
+    res.status(201).json({
+      success: true,
+      data: {
+        order,
+        message: 'Order created successfully',
+        receiptUrl: `/api/receipt/${order._id}/receipt`,
+        downloadReceiptUrl: `/api/receipt/${order._id}/receipt?download=true`
+      }
+    });
+  } catch (error) {
+    console.error('Checkout error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error processing checkout'
     });
   }
 };

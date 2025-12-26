@@ -1,6 +1,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const ErrorResponse = require('../utils/errorResponse');
+const { sendOrderConfirmationEmail } = require('../utils/sendEmail');
+const User = require('../models/User');
 
 // @desc      Get all orders
 // @route     GET /api/orders
@@ -93,25 +95,50 @@ exports.createOrder = async (req, res, next) => {
       taxPrice,
       shippingPrice,
       totalPrice,
-      isPaid: paymentMethod !== 'cash on delivery' ? false : true, // Mark as paid for COD
-      paidAt: paymentMethod !== 'cash on delivery' ? undefined : Date.now()
+      isPaid: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking', // Mark as paid for COD and mobile banking
+      paidAt: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking' ? Date.now() : undefined
     });
 
     // Update product stock
     for (const item of orderItems) {
       const product = await Product.findById(item.product);
       if (product) {
+        // Validate stock before updating
+        if (product.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${product.stock} ${product.name} available in stock`
+          });
+        }
+
         product.stock -= item.quantity;
         product.sold += item.quantity;
         await product.save();
       }
     }
 
+    // Get user for email
+    const user = await User.findById(req.user.id);
+
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmationEmail(user, order);
+    } catch (emailError) {
+      console.error('Error sending order confirmation email:', emailError);
+      // Don't fail the order creation if email fails
+    }
+
     res.status(201).json({
       success: true,
-      data: order
+      data: {
+        order,
+        message: 'Order created successfully',
+        receiptUrl: `/api/receipt/${order._id}/receipt`,
+        downloadReceiptUrl: `/api/receipt/${order._id}/receipt?download=true`
+      }
     });
   } catch (error) {
+    console.error('Error creating order:', error);
     res.status(400).json({
       success: false,
       message: error.message
@@ -124,7 +151,7 @@ exports.createOrder = async (req, res, next) => {
 // @access    Private/Admin
 exports.updateOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate('user', 'name email');
 
     if (!order) {
       return res.status(404).json({
@@ -133,8 +160,12 @@ exports.updateOrder = async (req, res, next) => {
       });
     }
 
-    if (req.body.status) {
+    let statusChanged = false;
+    let oldStatus = order.status;
+
+    if (req.body.status && order.status !== req.body.status) {
       order.status = req.body.status;
+      statusChanged = true;
     }
 
     if (req.body.isPaid && !order.isPaid) {
@@ -149,11 +180,22 @@ exports.updateOrder = async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
+    // Send status update email if status changed
+    if (statusChanged) {
+      try {
+        await sendOrderStatusUpdateEmail(order.user, order, order.status);
+      } catch (emailError) {
+        console.error('Error sending order status update email:', emailError);
+        // Don't fail the order update if email fails
+      }
+    }
+
     res.status(200).json({
       success: true,
       data: updatedOrder
     });
   } catch (error) {
+    console.error('Error updating order:', error);
     res.status(400).json({
       success: false,
       message: error.message
@@ -194,6 +236,14 @@ exports.deleteOrder = async (req, res, next) => {
 // @access    Private
 exports.getMyOrders = async (req, res, next) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized, user not found'
+      });
+    }
+
     const orders = await Order.find({ user: req.user.id });
 
     res.status(200).json({
