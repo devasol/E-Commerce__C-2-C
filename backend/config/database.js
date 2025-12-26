@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+// Load all models to ensure they are registered with Mongoose
+require('../models');
 
 const connectDB = async () => {
   try {
