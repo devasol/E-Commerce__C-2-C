@@ -113,10 +113,8 @@ router.route('/browser').post(protect, async (req, res, next) => {
     res.redirect(`/api/messages?type=success&message=Your+order+was+placed+successfully&orderId=${order._id}`);
   } catch (error) {
     console.error('Browser checkout error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Error processing checkout'
-    });
+    // Redirect to error message page instead of returning JSON for browser requests
+    res.redirect(`/api/messages?type=error&message=${encodeURIComponent(error.message || 'Error processing checkout')}`);
   }
 });
 

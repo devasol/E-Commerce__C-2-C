@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { productAPI } from '../../services/api';
-import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
+import { MdEdit, MdDelete, MdAdd, MdSearch } from 'react-icons/md';
 
 // Mock data for seller products
 const mockSellerProducts = [
@@ -81,7 +81,7 @@ const SellerProducts: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <h1 className="text-3xl font-bold">My Products</h1>
         <Link to="/seller/products/create" className="btn-primary flex items-center mt-4 md:mt-0">
-          <FaPlus className="mr-2" /> Add Product
+          <MdAdd className="mr-2" /> Add Product
         </Link>
       </div>
       
@@ -95,7 +95,7 @@ const SellerProducts: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="absolute left-3 top-4 text-gray-400" />
+          <MdSearch className="absolute left-3 top-4 text-gray-400" />
         </div>
       </div>
       
@@ -156,17 +156,17 @@ const SellerProducts: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link 
-                      to={`/seller/products/edit/${product._id}`} 
+                    <Link
+                      to={`/seller/products/edit/${product._id}`}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
-                      <FaEdit />
+                      <MdEdit />
                     </Link>
-                    <button 
+                    <button
                       onClick={() => handleDelete(product._id)}
                       className="text-red-600 hover:text-red-900"
                     >
-                      <FaTrash />
+                      <MdDelete />
                     </button>
                   </td>
                 </motion.tr>
@@ -180,3 +180,6 @@ const SellerProducts: React.FC = () => {
 };
 
 export default SellerProducts;
+
+// Add empty export to make this file a module
+export {};

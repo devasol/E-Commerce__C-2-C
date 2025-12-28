@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaRegStar, FaStarHalfAlt, FaShoppingCart, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { MdStar, MdStarBorder, MdStarHalf, MdShoppingCart, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { useCart } from '../context/CartContext';
 import { wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
@@ -122,11 +122,11 @@ const ProductDetail: React.FC = () => {
 
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(<FaStar key={i} className="text-yellow-400" />);
+        stars.push(<MdStar key={i} className="text-yellow-400" />);
       } else if (i === fullStars && hasHalfStar) {
-        stars.push(<FaStarHalfAlt key={i} className="text-yellow-400" />);
+        stars.push(<MdStarHalf key={i} className="text-yellow-400" />);
       } else {
-        stars.push(<FaRegStar key={i} className="text-yellow-400" />);
+        stars.push(<MdStarBorder key={i} className="text-yellow-400" />);
       }
     }
 
@@ -283,7 +283,7 @@ const ProductDetail: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <FaShoppingCart className="mr-2" />
+                      <MdShoppingCart className="mr-2" />
                       {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                     </>
                   )}
@@ -304,7 +304,7 @@ const ProductDetail: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      {isWishlisted ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+                      {isWishlisted ? <MdFavorite className="mr-2" /> : <MdFavoriteBorder className="mr-2" />}
                       {isWishlisted ? 'Wishlisted' : 'Wishlist'}
                     </>
                   )}

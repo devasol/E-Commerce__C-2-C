@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { orderAPI, paymentAPI } from '../services/api';
+import api, { orderAPI, paymentAPI } from '../services/api';
+import axios from 'axios';
 import { FaCreditCard, FaMoneyBillWave, FaMobileAlt } from 'react-icons/fa';
 
 const Checkout: React.FC = () => {
@@ -22,6 +23,10 @@ const Checkout: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderLoading, setOrderLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState<any>(null);
+  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
 
   useEffect(() => {
     document.title = 'Checkout - E-Shop';
@@ -64,13 +69,31 @@ const Checkout: React.FC = () => {
       const totalPrice = itemsPrice + taxPrice + shippingPrice;
       // Prepare order data
       const orderData = {
-        orderItems: cartState.items.map((item: any) => ({
-          product: typeof item.product === 'object' ? item.product._id : item.product,
-          name: typeof item.product === 'object' ? item.product.name : 'Product',
-          quantity: item.quantity,
-          price: item.price,
-          image: typeof item.product === 'object' && item.product.images ? item.product.images[0] : ''
-        })),
+        orderItems: cartState.items.map((item: any) => {
+          // Ensure we have the product object with name property
+          let productName = 'Product';
+          let productImage = '';
+          let productId = '';
+
+          if (typeof item.product === 'object') {
+            // Product is a full object
+            productName = item.product.name || 'Product';
+            productImage = item.product.images && item.product.images.length > 0 ? item.product.images[0] : '';
+            productId = item.product._id;
+          } else {
+            // Product is just an ID string, need to find the product in cart items
+            // This should not happen if cart is properly populated, but adding fallback
+            productId = item.product;
+          }
+
+          return {
+            product: productId,
+            name: productName,
+            quantity: item.quantity,
+            price: item.price,
+            image: productImage
+          };
+        }),
         shippingAddress: shippingInfo,
         paymentMethod,
         itemsPrice,
@@ -81,7 +104,8 @@ const Checkout: React.FC = () => {
 
       // Create order
       const orderResponse = await orderAPI.create(orderData);
-      const order = orderResponse.data.data;
+      const responseData = orderResponse.data.data;
+      const order = responseData.order || responseData;
       // If payment method is not cash on delivery, process payment
       if (paymentMethod !== 'cash on delivery') {
         // Process payment through Stripe
@@ -96,16 +120,52 @@ const Checkout: React.FC = () => {
       // Clear cart after successful order
       await clearCart();
 
-      // Redirect to order confirmation
-      navigate(`/order/${order._id}`);
+      // Trigger receipt download (if provided), then show centered success panel
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      let fullDownloadUrl: string | null = null;
+      if (responseData.downloadReceiptUrl) {
+        try {
+          setDownloadingReceipt(true);
+          const downloadFilename = `receipt-${order._id}.pdf`;
+          const rawApi = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+          const apiBase = rawApi.replace(/\/api$/, '');
+          fullDownloadUrl = `${apiBase}${responseData.downloadReceiptUrl}`;
+          const res = await axios.get(fullDownloadUrl, { responseType: 'blob' });
+          const blob = new Blob([res.data]);
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', downloadFilename);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (dlErr) {
+          console.error('Error downloading receipt:', dlErr);
+        } finally {
+          setDownloadingReceipt(false);
+        }
+      }
+
+      setOrderLoading(false);
+
+      // Show centered success state on this page before navigating
+      setOrderSuccess({
+        orderId: order._id,
+        message: responseData.message || 'Your order was placed successfully',
+        downloadUrl: fullDownloadUrl
+      });
     } catch (error: any) {
       console.error('Error creating order:', error);
-      alert(error?.message || 'Failed to create order. Please try again.');
+      const msg = error?.response?.data?.message || error?.message || 'Failed to create order. Please try again.';
+      setErrorMessage(msg);
+      setSuccessMessage(null);
       setOrderLoading(false);
     }
   };
 
-  if (cartState.items.length === 0) {
+  if (cartState.items.length === 0 && !orderSuccess) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
@@ -122,7 +182,43 @@ const Checkout: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      {successMessage && (
+        <div className="mb-4 p-4 rounded bg-green-50 border border-green-200 text-green-800">
+          {successMessage}
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="mb-4 p-4 rounded bg-red-50 border border-red-200 text-red-800">
+          {errorMessage}
+        </div>
+      )}
+      {/* If orderSuccess is set, show centered success panel and hide the form */}
+      {orderSuccess ? (
+        <div className="min-h-[50vh] flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center w-full max-w-2xl">
+            <h2 className="text-2xl font-bold mb-4 text-green-700">{orderSuccess.message}</h2>
+            <p className="text-gray-700 mb-4">Order ID: <strong>{orderSuccess.orderId}</strong></p>
+            {downloadingReceipt && <p className="text-gray-600 mb-4">Downloading receipt...</p>}
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => navigate(`/order/${orderSuccess.orderId}`)}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg"
+              >
+                View Order
+              </button>
+              <button
+                onClick={() => navigate('/products')}
+                className="px-6 py-3 border rounded-lg"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Shipping Information */}

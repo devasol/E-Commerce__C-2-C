@@ -30,6 +30,7 @@ app.use('/api/payment', require('./routes/payment'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/receipt', require('./routes/receipt'));
+app.use('/api/receipt-data', require('./routes/receiptData'));
 app.use('/api/checkout', require('./routes/checkout'));
 
 // Specific route to handle order confirmation - redirect to success message with receipt

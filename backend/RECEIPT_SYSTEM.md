@@ -21,6 +21,7 @@ This document outlines the implementation of the receipt system for the e-commer
 ### 3. API Endpoints
 - `GET /api/receipt/:orderId/receipt` - View receipt in browser
 - `GET /api/receipt/:orderId/receipt?download=true` - Download PDF receipt
+- `GET /api/receipt-data/:orderId/data` - Get receipt data for inline display
 
 ### 4. Integration Points
 - Receipt URLs included in order/checkout responses

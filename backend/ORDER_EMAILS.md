@@ -38,13 +38,45 @@ For Gmail, you'll need to use an App Password instead of your regular password.
 
 ## Frontend Integration
 
-For the "No routes matched" error you encountered, you can redirect users to a success page like:
+### Success and Error Messages
+The system now provides enhanced success and error message pages that automatically handle receipt downloads:
+
 ```
-// After successful order creation
+// After successful order creation - redirect to success page with auto-download
 window.location.href = `/api/messages?type=success&message=Your+order+was+placed+successfully&orderId=${order._id}`;
+
+// After failed order - redirect to error page
+window.location.href = `/api/messages?type=error&message=${encodeURIComponent(errorMessage)}`;
 ```
 
-Or handle it in your frontend routing by adding a catch-all route that handles these messages.
+### Using Checkout API Response
+The checkout API now returns URLs for success/error handling:
+
+```
+// After calling POST /api/cart/checkout
+fetch('/api/cart/checkout', { ... })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Redirect to success page with auto-download receipt
+      window.location.href = data.data.successMessageUrl;
+    } else {
+      // Redirect to error page
+      window.location.href = data.errorMessageUrl || '/error';
+    }
+  });
+```
+
+### Manual Receipt Download
+You can also trigger receipt download manually:
+
+```
+// Download receipt PDF
+window.open(`/api/receipt/${orderId}/receipt?download=true`, '_blank');
+
+// View receipt in browser
+window.open(`/api/receipt/${orderId}/receipt`, '_blank');
+```
 
 ## Error Handling
 

@@ -89,6 +89,26 @@ fetch('/api/cart/checkout', {
     paymentMethod: 'cash on delivery' // or 'card' for Stripe
   })
 })
+.then(response => response.json())
+.then(data => {
+  if (data.success) {
+    // Order created successfully
+    console.log('Order ID:', data.data.order._id);
+    console.log('Receipt URL:', data.data.receiptUrl);
+    console.log('Download Receipt URL:', data.data.downloadReceiptUrl);
+    console.log('Success Message URL:', data.data.successMessageUrl);
+
+    // Option 1: Redirect to success page with auto-download
+    window.location.href = data.data.successMessageUrl;
+
+    // Option 2: Trigger manual download
+    // window.open(data.data.downloadReceiptUrl, '_blank');
+  } else {
+    console.log('Checkout failed:', data.message);
+    // Handle error - could redirect to error page
+    window.location.href = data.errorMessageUrl || '/error';
+  }
+});
 ```
 
 ### 5. Processing Payment (for card payments)

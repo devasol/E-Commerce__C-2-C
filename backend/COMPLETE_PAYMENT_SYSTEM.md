@@ -78,6 +78,16 @@ fetch('/api/cart/checkout', {
     // Email confirmation sent automatically
     // Cart cleared automatically
     console.log('Order created:', data.data.order._id);
+    console.log('Receipt URL:', data.data.receiptUrl);
+    console.log('Download Receipt URL:', data.data.downloadReceiptUrl);
+    console.log('Success Message URL:', data.data.successMessageUrl);
+
+    // Redirect to success page with auto-download receipt
+    window.location.href = data.data.successMessageUrl;
+  } else {
+    console.log('Checkout failed:', data.message);
+    // Redirect to error page
+    window.location.href = data.errorMessageUrl || '/error';
   }
 });
 ```
@@ -181,6 +191,11 @@ fetch('/api/cart/checkout', {
 ### Payment Processing
 - `POST /api/payment/process` - Process Stripe payment
 - `POST /api/payment/webhook` - Handle Stripe webhooks (configured on Stripe dashboard)
+
+### Receipt Management
+- `GET /api/receipt/:orderId/receipt` - View receipt in browser
+- `GET /api/receipt/:orderId/receipt?download=true` - Download PDF receipt
+- `GET /api/receipt-data/:orderId/data` - Get receipt data for inline display
 
 ## Email Notifications
 - Order confirmation emails sent automatically

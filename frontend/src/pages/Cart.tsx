@@ -4,18 +4,20 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
 
-const Cart: React.FC = () => {
-  const { state: cartState, removeFromCart, updateQuantity, loadCart } = useCart();
-  const navigate = useNavigate();
-  const [loadingItems, setLoadingItems] = React.useState<Record<string, boolean>>({});
+// Separate CartItem component to isolate loading state
+interface CartItemProps {
+  item: any;
+  index: number;
+  removeFromCart: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+}
 
-  useEffect(() => {
-    loadCart();
-    document.title = 'Shopping Cart - E-Shop';
-  }, []);
+const CartItem: React.FC<CartItemProps> = ({ item, index, removeFromCart, updateQuantity }) => {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const productId = typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id);
 
-  const handleRemoveItem = async (productId: string) => {
-    setLoadingItems(prev => ({ ...prev, [productId]: true }));
+  const handleRemoveItem = async () => {
+    setIsLoading(true);
     try {
       await removeFromCart(productId);
       // Optionally show a success message
@@ -23,34 +25,108 @@ const Cart: React.FC = () => {
       console.error('Error removing item from cart:', error);
       alert(error?.message || 'Failed to remove item from cart. Please try again.');
     } finally {
-      setLoadingItems(prev => {
-        const newState = { ...prev };
-        delete newState[productId];
-        return newState;
-      });
+      setIsLoading(false);
     }
   };
 
-  const handleUpdateQuantity = async (productId: string, newQuantity: number) => {
+  const handleUpdateQuantity = async (newQuantity: number) => {
     if (newQuantity < 1) {
-      await handleRemoveItem(productId);
+      await handleRemoveItem();
       return;
     }
 
-    setLoadingItems(prev => ({ ...prev, [productId]: true }));
+    setIsLoading(true);
     try {
       await updateQuantity(productId, newQuantity);
     } catch (error: any) {
       console.error('Error updating quantity:', error);
       alert(error?.message || 'Failed to update quantity. Please try again.');
     } finally {
-      setLoadingItems(prev => {
-        const newState = { ...prev };
-        delete newState[productId];
-        return newState;
-      });
+      setIsLoading(false);
     }
   };
+
+  return (
+    <motion.div
+      className="border-b border-gray-200 p-6 flex items-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.1 }}
+    >
+      <div className="w-24 h-24 bg-gray-200 rounded-md overflow-hidden mr-6">
+        <img
+          src={typeof item.product === 'object' && item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/100x100'}
+          alt={typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product')}
+          className="w-full h-full object-contain"
+        />
+      </div>
+
+      <div className="flex-grow">
+        <h3 className="font-semibold text-lg">
+          {typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product Name')}
+        </h3>
+        <p className="text-gray-600">
+          ${typeof item.product === 'object' ? item.product.price.toFixed(2) : item.price.toFixed(2)} each
+        </p>
+
+        <div className="flex items-center mt-4">
+          <button
+            className="border rounded-full w-8 h-8 flex items-center justify-center"
+            onClick={() => handleUpdateQuantity(item.quantity - 1)}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            ) : <FaMinus size={12} />}
+          </button>
+
+          <span className="mx-4">{item.quantity}</span>
+
+          <button
+            className="border rounded-full w-8 h-8 flex items-center justify-center"
+            onClick={() => handleUpdateQuantity(item.quantity + 1)}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            ) : <FaPlus size={12} />}
+          </button>
+
+          <button
+            className="ml-6 text-red-600 hover:text-red-800 flex items-center"
+            onClick={handleRemoveItem}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500 mr-1"></div> Removing...
+              </>
+            ) : (
+              <>
+                <FaTrash className="mr-1" /> Remove
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div className="text-right">
+        <p className="font-semibold text-lg">
+          ${(item.price * item.quantity).toFixed(2)}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
+
+const Cart: React.FC = () => {
+  const { state: cartState, removeFromCart, updateQuantity, loadCart } = useCart();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadCart();
+    document.title = 'Shopping Cart - E-Shop';
+  }, []);
 
   const handleCheckout = () => {
     if (cartState.items.length > 0) {
@@ -61,13 +137,13 @@ const Cart: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Your Shopping Cart</h1>
-      
+
       {cartState.items.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-6">Looks like you haven't added anything to your cart yet</p>
-          <Link 
-            to="/products" 
+          <Link
+            to="/products"
             className="btn-primary inline-block"
           >
             Continue Shopping
@@ -79,122 +155,51 @@ const Cart: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               {cartState.items.map((item: any, index: number) => (
-                <motion.div
+                <CartItem
                   key={typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)}
-                  className="border-b border-gray-200 p-6 flex items-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <div className="w-24 h-24 bg-gray-200 rounded-md overflow-hidden mr-6">
-                    <img
-                      src={typeof item.product === 'object' && item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/100x100'}
-                      alt={typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product')}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  
-                  <div className="flex-grow">
-                    <h3 className="font-semibold text-lg">
-                      {typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product Name')}
-                    </h3>
-                    <p className="text-gray-600">
-                      ${typeof item.product === 'object' ? item.product.price.toFixed(2) : item.price.toFixed(2)} each
-                    </p>
-
-                    <div className="flex items-center mt-4">
-                      <button
-                        className="border rounded-full w-8 h-8 flex items-center justify-center"
-                        onClick={() => handleUpdateQuantity(
-                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id),
-                          item.quantity - 1
-                        )}
-                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
-                      >
-                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                        ) : <FaMinus size={12} />}
-                      </button>
-
-                      <span className="mx-4">{item.quantity}</span>
-
-                      <button
-                        className="border rounded-full w-8 h-8 flex items-center justify-center"
-                        onClick={() => handleUpdateQuantity(
-                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id),
-                          item.quantity + 1
-                        )}
-                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
-                      >
-                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                        ) : <FaPlus size={12} />}
-                      </button>
-
-                      <button
-                        className="ml-6 text-red-600 hover:text-red-800 flex items-center"
-                        onClick={() => handleRemoveItem(
-                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)
-                        )}
-                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
-                      >
-                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500 mr-1"></div> Removing...
-                          </>
-                        ) : (
-                          <>
-                            <FaTrash className="mr-1" /> Remove
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="font-semibold text-lg">
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                </motion.div>
+                  item={item}
+                  index={index}
+                  removeFromCart={removeFromCart}
+                  updateQuantity={updateQuantity}
+                />
               ))}
             </div>
           </div>
-          
+
           {/* Order Summary */}
           <div>
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
-              
+
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>${cartState.totalPrice.toFixed(2)}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span>$5.99</span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span>Tax</span>
                   <span>${(cartState.totalPrice * 0.08).toFixed(2)}</span>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4 flex justify-between font-bold text-lg">
                   <span>Total</span>
                   <span>${(cartState.totalPrice + 5.99 + (cartState.totalPrice * 0.08)).toFixed(2)}</span>
                 </div>
               </div>
-              
+
               <button
                 onClick={handleCheckout}
                 className="w-full btn-primary py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
                 Proceed to Checkout
               </button>
-              
+
               <button
                 onClick={() => navigate('/products')}
                 className="w-full mt-3 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors"

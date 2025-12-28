@@ -399,21 +399,23 @@ exports.checkout = async (req, res, next) => {
       }
     }
 
-    // For successful checkout, send the order data with receipt URLs
+    // For successful checkout, send the order data with receipt URLs and success message
     res.status(201).json({
       success: true,
       data: {
         order,
         message: 'Order created successfully',
         receiptUrl: `/api/receipt/${order._id}/receipt`,
-        downloadReceiptUrl: `/api/receipt/${order._id}/receipt?download=true`
+        downloadReceiptUrl: `/api/receipt/${order._id}/receipt?download=true`,
+        successMessageUrl: `/api/messages?type=success&message=Your+order+was+placed+successfully&orderId=${order._id}`
       }
     });
   } catch (error) {
     console.error('Checkout error:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Error processing checkout'
+      message: error.message || 'Error processing checkout',
+      errorMessageUrl: `/api/messages?type=error&message=${encodeURIComponent(error.message || 'Error processing checkout')}`
     });
   }
 };

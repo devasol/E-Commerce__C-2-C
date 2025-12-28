@@ -6,7 +6,7 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 // @desc      Get order receipt
-// @route     GET /api/orders/:orderId/receipt
+// @route     GET /api/receipt/:orderId/receipt
 // @access    Private
 router.route('/:orderId/receipt').get(protect, async (req, res, next) => {
   try {
@@ -205,16 +205,16 @@ router.route('/:orderId/receipt').get(protect, async (req, res, next) => {
 
     // Check if user wants to download PDF or view HTML
     const download = req.query.download === 'true';
-    
+
     if (download) {
       // Generate PDF
-      const browser = await puppeteer.launch({ 
+      const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
       const page = await browser.newPage();
       await page.setContent(receiptHtml, { waitUntil: 'networkidle0' });
-      
+
       const pdf = await page.pdf({
         format: 'A4',
         margin: {
@@ -224,14 +224,18 @@ router.route('/:orderId/receipt').get(protect, async (req, res, next) => {
           left: '20px'
         }
       });
-      
+
       await browser.close();
-      
+
       res.contentType('application/pdf');
       res.header('Content-Disposition', `attachment; filename="order-receipt-${order._id}.pdf"`);
       res.send(pdf);
     } else {
       // Send HTML receipt
+      // Add CORS headers for inline display
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       res.send(receiptHtml);
     }
   } catch (error) {
