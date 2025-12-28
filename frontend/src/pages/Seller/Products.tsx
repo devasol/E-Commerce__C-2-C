@@ -52,9 +52,9 @@ const SellerProducts: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (typeof product.category === 'object' ? product.category.name : product.category).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDelete = async (id: string) => {
@@ -135,7 +135,7 @@ const SellerProducts: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{product.category.name}</div>
+                    <div className="text-sm text-gray-900">{typeof product.category === 'object' ? product.category.name : product.category}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>

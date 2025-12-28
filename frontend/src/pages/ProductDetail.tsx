@@ -37,6 +37,8 @@ const ProductDetail: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -72,6 +74,7 @@ const ProductDetail: React.FC = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
+    setCartLoading(true);
     try {
       if (product) {
         await addToCart(product._id, quantity);
@@ -83,11 +86,14 @@ const ProductDetail: React.FC = () => {
       console.error('Error adding to cart:', error);
       // Show error message to user
       alert(error?.message || 'Failed to add item to cart. Please try again.');
+    } finally {
+      setCartLoading(false);
     }
   };
 
   const toggleWishlist = async () => {
     if (!product) return;
+    setWishlistLoading(true);
 
     try {
       if (isWishlisted) {
@@ -104,6 +110,8 @@ const ProductDetail: React.FC = () => {
     } catch (error: any) {
       console.error('Error updating wishlist:', error);
       alert(error?.message || 'Failed to update wishlist. Please try again.');
+    } finally {
+      setWishlistLoading(false);
     }
   };
 
@@ -192,7 +200,7 @@ const ProductDetail: React.FC = () => {
           <div>
             <div className="mb-4">
               <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                {product.category.name}
+                {typeof product.category === 'object' ? product.category.name : (typeof product.category === 'string' ? product.category : 'Category')}
               </span>
               {product.subcategory && (
                 <span className="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded ml-2">
@@ -262,27 +270,44 @@ const ProductDetail: React.FC = () => {
               <div className="flex space-x-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0}
+                  disabled={product.stock === 0 || cartLoading}
                   className={`flex items-center px-6 py-3 rounded-lg font-semibold ${
                     product.stock === 0
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
-                  <FaShoppingCart className="mr-2" />
-                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  {cartLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Adding...
+                    </>
+                  ) : (
+                    <>
+                      <FaShoppingCart className="mr-2" />
+                      {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </>
+                  )}
                 </button>
 
                 <button
                   onClick={toggleWishlist}
+                  disabled={wishlistLoading}
                   className={`flex items-center px-6 py-3 border rounded-lg font-semibold ${
                     isWishlisted
                       ? 'bg-red-100 text-red-600 border-red-300'
                       : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
                   }`}
                 >
-                  {isWishlisted ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
-                  {isWishlisted ? 'Wishlisted' : 'Wishlist'}
+                  {wishlistLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800 mr-2"></div> {isWishlisted ? 'Removing...' : 'Adding...'}
+                    </>
+                  ) : (
+                    <>
+                      {isWishlisted ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+                      {isWishlisted ? 'Wishlisted' : 'Wishlist'}
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -301,7 +326,7 @@ const ProductDetail: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-600">Category: </span>
-                  <span className="font-semibold">{product.category.name}</span>
+                  <span className="font-semibold">{typeof product.category === 'object' ? product.category.name : (typeof product.category === 'string' ? product.category : 'Category')}</span>
                 </div>
                 <div>
                   <span className="text-gray-600">SKU: </span>

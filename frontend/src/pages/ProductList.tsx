@@ -412,7 +412,7 @@ const ProductList: React.FC = () => {
                   <div className="relative">
                     <ImageWithFallback
                       src={product.images[0]}
-                      alt={product.name}
+                      alt={typeof product.name === 'string' ? product.name : 'Product Image'}
                       className="w-full h-56 object-cover transition-transform duration-500 hover:scale-110"
                     />
                     {product.discount > 0 && (
@@ -428,7 +428,7 @@ const ProductList: React.FC = () => {
                   </div>
 
                   <div className="p-6">
-                    <h3 className="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">{product.name}</h3>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">{typeof product.name === 'string' ? product.name : 'Product Name'}</h3>
 
                     <div className="flex items-center mb-3">
                       {renderRating(product.ratings.average)}
@@ -591,7 +591,7 @@ const ProductList: React.FC = () => {
           <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">{selectedProduct.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{typeof selectedProduct.name === 'string' ? selectedProduct.name : 'Product Details'}</h2>
                 <button
                   onClick={closeModal}
                   className="text-gray-500 hover:text-gray-700"
@@ -604,7 +604,7 @@ const ProductList: React.FC = () => {
                 <div>
                   <ImageWithFallback
                     src={selectedProduct.images[selectedImageIndex]}
-                    alt={selectedProduct.name}
+                    alt={typeof selectedProduct.name === 'string' ? selectedProduct.name : 'Product Image'}
                     className="w-full h-64 object-contain rounded-lg mb-4"
                   />
                   {selectedProduct.images.length > 1 && (
@@ -618,11 +618,11 @@ const ProductList: React.FC = () => {
                               ? 'border-blue-500 ring-2 ring-blue-300 scale-105'
                               : 'border-gray-300 hover:border-blue-400'
                           }`}
-                          aria-label={`View image ${index + 1} of ${selectedProduct.name}`}
+                          aria-label={`View image ${index + 1} of ${typeof selectedProduct.name === 'string' ? selectedProduct.name : 'Product'}`}
                         >
                           <ImageWithFallback
                             src={img}
-                            alt={`${selectedProduct.name} thumbnail ${index + 1}`}
+                            alt={`${typeof selectedProduct.name === 'string' ? selectedProduct.name : 'Product'} thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
                           />
                         </button>
@@ -668,7 +668,7 @@ const ProductList: React.FC = () => {
                       </div>
                       <div>
                         <span className="text-gray-600">Category: </span>
-                        <span className="font-semibold">{selectedProduct.category}</span>
+                        <span className="font-semibold">{typeof selectedProduct.category === 'object' ? selectedProduct.category.name : (typeof selectedProduct.category === 'string' ? selectedProduct.category : 'Category')}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Subcategory: </span>

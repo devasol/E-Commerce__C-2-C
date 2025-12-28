@@ -11,6 +11,7 @@ const Wishlist: React.FC = () => {
   const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadWishlist();
@@ -30,21 +31,35 @@ const Wishlist: React.FC = () => {
   };
 
   const removeFromWishlist = async (productId: string) => {
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     try {
       await wishlistAPI.removeFromWishlist(productId);
       setWishlistItems(prev => prev.filter(item => item.product._id !== productId));
     } catch (error) {
       console.error('Error removing from wishlist:', error);
+    } finally {
+      setLoadingItems(prev => {
+        const newState = { ...prev };
+        delete newState[productId];
+        return newState;
+      });
     }
   };
 
   const handleAddToCart = async (product: any) => {
+    setLoadingItems(prev => ({ ...prev, [product._id]: true }));
     try {
       await addToCart(product._id, 1);
       alert(`${product.name} added to cart successfully!`);
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add item to cart. Please try again.');
+    } finally {
+      setLoadingItems(prev => {
+        const newState = { ...prev };
+        delete newState[product._id];
+        return newState;
+      });
     }
   };
 
@@ -84,33 +99,47 @@ const Wishlist: React.FC = () => {
             >
               <div className="w-1/3">
                 <ImageWithFallback
-                  src={item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/200x200'}
-                  alt={item.product.name}
+                  src={typeof item.product === 'object' && item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/200x200'}
+                  alt={typeof item.product === 'object' ? item.product.name : 'Product Image'}
                   className="w-full h-full object-contain p-2"
                 />
               </div>
               
               <div className="w-2/3 p-4 flex flex-col">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{item.product.name}</h3>
+                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{typeof item.product === 'object' ? item.product.name : 'Product Name'}</h3>
                 
                 <div className="text-xl font-bold text-blue-600 mb-2">
-                  ${item.product.price?.toFixed(2) || '0.00'}
+                  ${typeof item.product === 'object' ? (item.product.price?.toFixed(2) || '0.00') : '0.00'}
                 </div>
                 
                 <div className="mt-auto flex space-x-2">
                   <button
                     onClick={() => handleAddToCart(item.product)}
                     className="flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
+                    disabled={loadingItems[item.product._id]}
                   >
-                    <FaShoppingCart className="mr-2" /> Add to Cart
+                    {loadingItems[item.product._id] ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Adding...
+                      </>
+                    ) : (
+                      <>
+                        <FaShoppingCart className="mr-2" /> Add to Cart
+                      </>
+                    )}
                   </button>
-                  
+
                   <button
                     onClick={() => removeFromWishlist(item.product._id)}
                     className="flex items-center justify-center w-10 h-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-md"
                     title="Remove from wishlist"
+                    disabled={loadingItems[item.product._id]}
                   >
-                    <FaTrash />
+                    {loadingItems[item.product._id] ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                    ) : (
+                      <FaTrash />
+                    )}
                   </button>
                 </div>
               </div>

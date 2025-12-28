@@ -208,37 +208,37 @@ const Header: React.FC = () => {
                 Products
               </Link>
               <Link
-                to="/products"
+                to="/products?category=electronics"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Electronics
               </Link>
               <Link
-                to="/products"
+                to="/products?category=fashion"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Fashion
               </Link>
               <Link
-                to="/products"
+                to="/products?category=home"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Home & Kitchen
               </Link>
               <Link
-                to="/products"
+                to="/products?category=beauty"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Beauty
               </Link>
               <Link
-                to="/products"
+                to="/products?category=sports"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Sports
               </Link>
               <Link
-                to="/products"
+                to="/products?category=books"
                 className="text-gray-700 hover:text-blue-600 font-medium py-2 transition-colors duration-300"
               >
                 Books

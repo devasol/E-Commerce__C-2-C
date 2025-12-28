@@ -7,6 +7,7 @@ import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
 const Cart: React.FC = () => {
   const { state: cartState, removeFromCart, updateQuantity, loadCart } = useCart();
   const navigate = useNavigate();
+  const [loadingItems, setLoadingItems] = React.useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadCart();
@@ -14,12 +15,19 @@ const Cart: React.FC = () => {
   }, []);
 
   const handleRemoveItem = async (productId: string) => {
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     try {
       await removeFromCart(productId);
       // Optionally show a success message
     } catch (error: any) {
       console.error('Error removing item from cart:', error);
       alert(error?.message || 'Failed to remove item from cart. Please try again.');
+    } finally {
+      setLoadingItems(prev => {
+        const newState = { ...prev };
+        delete newState[productId];
+        return newState;
+      });
     }
   };
 
@@ -29,11 +37,18 @@ const Cart: React.FC = () => {
       return;
     }
 
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     try {
       await updateQuantity(productId, newQuantity);
     } catch (error: any) {
       console.error('Error updating quantity:', error);
       alert(error?.message || 'Failed to update quantity. Please try again.');
+    } finally {
+      setLoadingItems(prev => {
+        const newState = { ...prev };
+        delete newState[productId];
+        return newState;
+      });
     }
   };
 
@@ -65,60 +80,73 @@ const Cart: React.FC = () => {
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               {cartState.items.map((item: any, index: number) => (
                 <motion.div
-                  key={typeof item.product === 'object' ? item.product._id : item.product}
+                  key={typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)}
                   className="border-b border-gray-200 p-6 flex items-center"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <div className="w-24 h-24 bg-gray-200 rounded-md overflow-hidden mr-6">
-                    <img 
-                      src={typeof item.product === 'object' ? 
-                        (item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/100x100') 
-                        : 'https://via.placeholder.com/100x100'} 
-                      alt={typeof item.product === 'object' ? item.product.name : 'Product'} 
+                    <img
+                      src={typeof item.product === 'object' && item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/100x100'}
+                      alt={typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product')}
                       className="w-full h-full object-contain"
                     />
                   </div>
                   
                   <div className="flex-grow">
                     <h3 className="font-semibold text-lg">
-                      {typeof item.product === 'object' ? item.product.name : 'Product Name'}
+                      {typeof item.product === 'object' ? item.product.name : (typeof item.product === 'string' ? item.product : 'Product Name')}
                     </h3>
                     <p className="text-gray-600">
                       ${typeof item.product === 'object' ? item.product.price.toFixed(2) : item.price.toFixed(2)} each
                     </p>
-                    
+
                     <div className="flex items-center mt-4">
-                      <button 
+                      <button
                         className="border rounded-full w-8 h-8 flex items-center justify-center"
                         onClick={() => handleUpdateQuantity(
-                          typeof item.product === 'object' ? item.product._id : item.product, 
+                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id),
                           item.quantity - 1
                         )}
+                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
                       >
-                        <FaMinus size={12} />
+                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        ) : <FaMinus size={12} />}
                       </button>
-                      
+
                       <span className="mx-4">{item.quantity}</span>
-                      
-                      <button 
+
+                      <button
                         className="border rounded-full w-8 h-8 flex items-center justify-center"
                         onClick={() => handleUpdateQuantity(
-                          typeof item.product === 'object' ? item.product._id : item.product, 
+                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id),
                           item.quantity + 1
                         )}
+                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
                       >
-                        <FaPlus size={12} />
+                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        ) : <FaPlus size={12} />}
                       </button>
-                      
-                      <button 
+
+                      <button
                         className="ml-6 text-red-600 hover:text-red-800 flex items-center"
                         onClick={() => handleRemoveItem(
-                          typeof item.product === 'object' ? item.product._id : item.product
+                          typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)
                         )}
+                        disabled={loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)]}
                       >
-                        <FaTrash className="mr-1" /> Remove
+                        {loadingItems[typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id)] ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500 mr-1"></div> Removing...
+                          </>
+                        ) : (
+                          <>
+                            <FaTrash className="mr-1" /> Remove
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
