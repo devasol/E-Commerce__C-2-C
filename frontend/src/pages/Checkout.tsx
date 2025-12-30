@@ -680,7 +680,12 @@ const Checkout: React.FC = () => {
                     </button>
 
                     <button
-                      onClick={() => { setTelebirrStep('form'); setTelebirrSession(null); setErrorMessage(null); }}
+                      onClick={() => {
+                        setTelebirrStep('form');
+                        setTelebirrSession(null);
+                        setErrorMessage(null);
+                        setTelebirrPin(''); // Clear the PIN when canceling
+                      }}
                       className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50"
                     >
                       Cancel
@@ -694,8 +699,8 @@ const Checkout: React.FC = () => {
                 </div>
               )}
 
-              {/* Place Order Button */}
-              {!orderSuccess && (
+              {/* Place Order Button - Only show when no payment session is active */}
+              {!orderSuccess && telebirrStep === 'form' && (
                 <button
                   onClick={handleSubmit}
                   disabled={orderLoading}
@@ -709,6 +714,13 @@ const Checkout: React.FC = () => {
                       `Place Order - $${(cartState.totalPrice + 5.99 + (cartState.totalPrice * 0.08)).toFixed(2)}`
                   }
                 </button>
+              )}
+
+              {/* Show payment status when TeleBirr session is active */}
+              {!orderSuccess && telebirrStep !== 'form' && telebirrStep !== 'verified' && (
+                <div className="w-full py-4 rounded-lg font-bold text-white bg-blue-400 text-center mb-4">
+                  {telebirrStep === 'verifying' ? 'Verifying payment...' : 'Complete your payment using the PIN box above'}
+                </div>
               )}
 
               {!orderSuccess && (

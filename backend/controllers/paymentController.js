@@ -146,6 +146,16 @@ exports.verifyTelebirrPayment = async (req, res, next) => {
 
     await order.save();
 
+    // Clear the user's cart after successful payment
+    const Cart = require('../models/Cart');
+    const cart = await Cart.findOne({ user: paymentSession.userId });
+    if (cart) {
+      cart.items = [];
+      cart.totalItems = 0;
+      cart.totalPrice = 0;
+      await cart.save();
+    }
+
     // Clear the payment session
     delete req.session.telebirrPayment;
 
