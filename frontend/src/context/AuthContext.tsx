@@ -8,7 +8,8 @@ interface AuthContextType {
   logout: () => void;
   register: (name: string, email: string, password: string, role?: string) => Promise<void>;
   loadUser: () => Promise<void>;
-  updateProfile: (userData: { name: string; email: string }) => Promise<void>;
+  updateProfile: (userData: { name: string; email: string; role?: 'customer' | 'seller' }) => Promise<void>;
+  updateRole: (role: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
@@ -141,9 +142,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'LOGOUT' });
   };
 
-  const updateProfile = async (userData: { name: string; email: string }) => {
+  const updateProfile = async (userData: { name: string; email: string; role?: 'customer' | 'seller' }) => {
     try {
       const res = await authAPI.updateDetails(userData);
+      dispatch({ type: 'USER_UPDATE', payload: res.data.data });
+      return res.data;
+    } catch (err: any) {
+      throw err?.response?.data || err;
+    }
+  };
+
+  const updateRole = async (role: string) => {
+    try {
+      const res = await authAPI.updateRole(role);
       dispatch({ type: 'USER_UPDATE', payload: res.data.data });
       return res.data;
     } catch (err: any) {
@@ -169,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         loadUser,
         updateProfile,
+        updateRole,
         changePassword,
       }}
     >

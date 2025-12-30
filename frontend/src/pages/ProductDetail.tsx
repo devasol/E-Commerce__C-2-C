@@ -3,9 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MdStar, MdStarBorder, MdStarHalf, MdShoppingCart, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { useCart } from '../context/CartContext';
-import { wishlistAPI } from '../services/api';
+import { productAPI, wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
-import { fetchProductById } from '../services/productAPI';
 
 // Mock data for a product
 const mockProduct = {
@@ -45,7 +44,8 @@ const ProductDetail: React.FC = () => {
       try {
         setLoading(true);
         // Try to fetch from API first
-        const data = await fetchProductById(id);
+        const response = await productAPI.getById(id!);
+        const data = response.data.data;
         setProduct(data);
         document.title = `${data.name} - E-Shop`;
 

@@ -2,47 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { productAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { MdEdit, MdDelete, MdAdd, MdSearch } from 'react-icons/md';
-
-// Mock data for seller products
-const mockSellerProducts = [
-  {
-    _id: '1',
-    name: 'Wireless Bluetooth Headphones',
-    price: 99.99,
-    stock: 25,
-    category: { name: 'Electronics' },
-    ratings: { average: 4.5, count: 120 },
-    isActive: true,
-    sold: 45
-  },
-  {
-    _id: '2',
-    name: 'Laptop Backpack',
-    price: 49.99,
-    stock: 50,
-    category: { name: 'Fashion' },
-    ratings: { average: 4.7, count: 210 },
-    isActive: true,
-    sold: 28
-  }
-];
 
 const SellerProducts: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { state: authState } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // In a real app, this would be: const response = await productAPI.getBySeller(sellerId);
-        // For now, using mock data
-        setTimeout(() => {
-          setProducts(mockSellerProducts);
-          setLoading(false);
-          document.title = 'Seller - My Products - E-Shop';
-        }, 1000);
+        if (authState.user) {
+          const response = await productAPI.getBySeller(authState.user._id);
+          setProducts(response.data.data);
+        }
+        setLoading(false);
+        document.title = 'Seller - My Products - E-Shop';
       } catch (error) {
         console.error('Error fetching products:', error);
         setLoading(false);
@@ -50,7 +27,7 @@ const SellerProducts: React.FC = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [authState.user]);
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,7 +37,7 @@ const SellerProducts: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        // In a real app, this would be: await productAPI.delete(id);
+        await productAPI.delete(id);
         setProducts(products.filter(product => product._id !== id));
       } catch (error) {
         console.error('Error deleting product:', error);
@@ -131,22 +108,22 @@ const SellerProducts: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{product.name}</div>
                     <div className="text-sm text-gray-500">
-                      {product.ratings.average.toFixed(1)} ★ ({product.ratings.count} reviews)
+                      {(product.ratings?.average ? product.ratings.average.toFixed(1) : '0.0')} ★ ({product.ratings?.count || 0} reviews)
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{typeof product.category === 'object' ? product.category.name : product.category}</div>
+                    <div className="text-sm text-gray-900">{typeof product.category === 'object' ? product.category.name || 'N/A' : product.category || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">${(product.price || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${product.stock > 10 ? 'text-green-600' : 'text-red-600'}`}>
-                      {product.stock} {product.stock <= 10 ? ' (Low Stock)' : ''}
+                    <div className={`text-sm font-medium ${(product.stock || 0) > 10 ? 'text-green-600' : 'text-red-600'}`}>
+                      {product.stock || 0} {(product.stock || 0) <= 10 ? ' (Low Stock)' : ''}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{product.sold}</div>
+                    <div className="text-sm text-gray-900">{product.sold || 0}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${

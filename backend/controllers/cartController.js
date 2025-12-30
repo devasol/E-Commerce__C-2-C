@@ -365,8 +365,8 @@ exports.checkout = async (req, res, next) => {
       taxPrice,
       shippingPrice,
       totalPrice,
-      isPaid: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking', // Mark as paid for COD and mobile banking
-      paidAt: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking' ? Date.now() : undefined
+      isPaid: paymentMethod === 'telebirr', // Mark as paid only for TeleBirr payments
+      paidAt: paymentMethod === 'telebirr' ? Date.now() : undefined
     });
 
     // Update product stock

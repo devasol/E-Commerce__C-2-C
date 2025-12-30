@@ -2,47 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { orderAPI } from '../../services/api';
-import { FaSearch, FaEdit } from 'react-icons/fa';
-
-// Mock data for seller orders
-const mockSellerOrders = [
-  {
-    _id: '1',
-    user: { name: 'John Doe', email: 'john@example.com' },
-    orderItems: [
-      { name: 'Wireless Headphones', quantity: 1 }
-    ],
-    shippingAddress: { city: 'New York', state: 'NY' },
-    paymentMethod: 'card',
-    itemsPrice: 99.99,
-    taxPrice: 7.99,
-    shippingPrice: 5.99,
-    totalPrice: 113.97,
-    isPaid: true,
-    paidAt: '2023-09-15T10:30:00.000Z',
-    isDelivered: true,
-    deliveredAt: '2023-09-20T14:45:00.000Z',
-    status: 'delivered',
-    createdAt: '2023-09-15T10:00:00.000Z'
-  },
-  {
-    _id: '2',
-    user: { name: 'Jane Smith', email: 'jane@example.com' },
-    orderItems: [
-      { name: 'Laptop Backpack', quantity: 2 }
-    ],
-    shippingAddress: { city: 'Los Angeles', state: 'CA' },
-    paymentMethod: 'cash on delivery',
-    itemsPrice: 99.98,
-    taxPrice: 7.99,
-    shippingPrice: 5.99,
-    totalPrice: 113.96,
-    isPaid: false,
-    isDelivered: false,
-    status: 'processing',
-    createdAt: '2023-09-20T11:15:00.000Z'
-  }
-];
+import api from '../../services/api';
+import { FaSearch, FaEye } from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
 
 const SellerOrders: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -52,13 +14,10 @@ const SellerOrders: React.FC = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // In a real app, this would be: const response = await orderAPI.getAll();
-        // For now, filtering for seller-specific orders using mock data
-        setTimeout(() => {
-          setOrders(mockSellerOrders);
-          setLoading(false);
-          document.title = 'Seller - Orders - E-Shop';
-        }, 1000);
+        const response = await orderAPI.getSellerOrders();
+        setOrders(response.data.data);
+        setLoading(false);
+        document.title = 'Seller - Orders - E-Shop';
       } catch (error) {
         console.error('Error fetching orders:', error);
         setLoading(false);
@@ -68,11 +27,11 @@ const SellerOrders: React.FC = () => {
     fetchOrders();
   }, []);
 
-  const filteredOrders = orders.filter(order => 
+  const filteredOrders = orders.filter(order =>
     order._id.includes(searchTerm) ||
-    order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.status.toLowerCase().includes(searchTerm.toLowerCase())
+    (order.user?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.user?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.status || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -80,9 +39,31 @@ const SellerOrders: React.FC = () => {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'processing': return 'bg-blue-100 text-blue-800';
       case 'shipped': return 'bg-indigo-100 text-indigo-800';
+      case 'sent': return 'bg-purple-100 text-purple-800';
       case 'delivered': return 'bg-green-100 text-green-800';
+      case 'received': return 'bg-teal-100 text-teal-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      // Call the API to update the order status
+      const response = await api.put(`/orders/${orderId}/seller-update`, { status: newStatus });
+
+      // Update the order in the local state
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (error: any) {
+      console.error('Error updating order status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update order status');
     }
   };
 
@@ -135,6 +116,7 @@ const SellerOrders: React.FC = () => {
               </tr>
             ) : (
               filteredOrders.map((order, index) => (
+                console.log(order.status),
                 <motion.tr 
                   key={order._id}
                   initial={{ opacity: 0, y: 20 }}
@@ -145,37 +127,75 @@ const SellerOrders: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900">#{order._id}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{order.user.name}</div>
-                    <div className="text-sm text-gray-500">{order.user.email}</div>
+                    <div className="text-sm font-medium text-gray-900">{order.user?.name || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">{order.user?.email || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {order.orderItems.map((item: any, idx: number) => (
-                        <div key={idx}>
-                          {item.name} ({item.quantity})
-                          {idx < order.orderItems.length - 1 && ', '}
-                        </div>
-                      ))}
+                      {order.orderItems && order.orderItems.length > 0 ?
+                        order.orderItems.map((item: any, idx: number) => (
+                          <div key={idx}>
+                            {item.name} ({item.quantity})
+                            {idx < order.orderItems.length - 1 && ', '}
+                          </div>
+                        ))
+                        : 'No items'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${order.totalPrice.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">${(order.totalPrice || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status || 'pending')}`}>
+                      {(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link 
-                      to={`/seller/orders/${order._id}`} 
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      <FaEdit />
-                    </Link>
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/order/${order._id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="View Order Details"
+                      >
+                        <FaEye />
+                      </Link>
+
+                      {/* Show "Shipped" button for orders in processing status */}
+                      {order.status === 'processing' && (
+                        <button
+                          onClick={() => updateOrderStatus(order._id, 'shipped')}
+                          className="text-green-600 hover:text-green-900"
+                          title="Mark as Shipped"
+                        >
+                          Shipped
+                        </button>
+                      )}
+
+                      {/* Show "Sent" button for orders that are shipped */}
+                      {order.status === 'shipped' && (
+                        <button
+                          onClick={() => updateOrderStatus(order._id, 'sent')}
+                          className="text-purple-600 hover:text-purple-900"
+                          title="Mark as Sent"
+                        >
+                          Sent
+                        </button>
+                      )}
+
+                      {/* Show "Delivered" button for orders that are sent */}
+                      {order.status === 'sent' && (
+                        <button
+                          onClick={() => updateOrderStatus(order._id, 'delivered')}
+                          className="text-green-600 hover:text-green-900"
+                          title="Mark as Delivered"
+                        >
+                          Delivered
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </motion.tr>
               ))

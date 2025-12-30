@@ -12,6 +12,7 @@ export interface User {
     country?: string;
   };
   avatar?: string;
+  accountBalance?: number;
 }
 
 export interface Category {
@@ -81,7 +82,7 @@ export interface Order {
   user: string | User;
   orderItems: OrderItem[];
   shippingAddress: ShippingAddress;
-  paymentMethod: 'card' | 'mobile banking' | 'cash on delivery';
+  paymentMethod: 'card' | 'mobile banking' | 'cash on delivery' | 'internal' | 'telebirr';
   paymentResult?: {
     id?: string;
     status?: string;
@@ -96,7 +97,7 @@ export interface Order {
   paidAt?: string;
   isDelivered: boolean;
   deliveredAt?: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'shipped' | 'sent' | 'delivered' | 'received' | 'cancelled';
   createdAt: string;
 }
 

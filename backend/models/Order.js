@@ -61,7 +61,7 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     required: true,
-    enum: ['card', 'mobile banking', 'cash on delivery']
+    enum: ['card', 'mobile banking', 'cash on delivery', 'internal', 'telebirr']
   },
   paymentResult: {
     id: String,
@@ -107,8 +107,22 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'processing', 'shipped', 'sent', 'delivered', 'received', 'cancelled'],
     default: 'pending'
+  },
+  isSent: {
+    type: Boolean,
+    default: false
+  },
+  sentAt: {
+    type: Date
+  },
+  isReceived: {
+    type: Boolean,
+    default: false
+  },
+  receivedAt: {
+    type: Date
   }
 }, {
   timestamps: true

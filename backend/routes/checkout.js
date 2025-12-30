@@ -2,6 +2,7 @@ const express = require('express');
 const Cart = require('../models/Cart');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { sendOrderConfirmationEmail } = require('../utils/sendEmail');
 
@@ -67,6 +68,13 @@ router.route('/browser').post(protect, async (req, res, next) => {
       image: item.product.images ? item.product.images[0] : null
     }));
 
+    // Check if payment method is TeleBirr and handle accordingly
+    let user = null;
+    if (paymentMethod === 'telebirr') {
+      // For demo TeleBirr, we don't need to check account balance
+      // In a real implementation, you would verify the payment with TeleBirr API
+    }
+
     // Create order
     const order = await Order.create({
       orderItems,
@@ -77,8 +85,8 @@ router.route('/browser').post(protect, async (req, res, next) => {
       taxPrice,
       shippingPrice,
       totalPrice,
-      isPaid: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking', // Mark as paid for COD and mobile banking
-      paidAt: paymentMethod === 'cash on delivery' || paymentMethod === 'mobile banking' ? Date.now() : undefined
+      isPaid: paymentMethod === 'telebirr', // Only mark as paid for TeleBirr payments
+      paidAt: paymentMethod === 'telebirr' ? Date.now() : undefined
     });
 
     // Update product stock
@@ -98,23 +106,22 @@ router.route('/browser').post(protect, async (req, res, next) => {
     await cart.save();
 
     // Send order confirmation email
-    const User = require('../models/User');
-    const user = await User.findById(req.user.id);
-    if (user) {
+    const orderUser = await User.findById(req.user.id);
+    if (orderUser) {
       try {
-        await sendOrderConfirmationEmail(user, order);
+        await sendOrderConfirmationEmail(orderUser, order);
       } catch (emailError) {
         console.error('Error sending order confirmation email:', emailError);
         // Don't fail the order creation if email fails
       }
     }
 
-    // Redirect to success page with order ID for receipt download
-    res.redirect(`/api/messages?type=success&message=Your+order+was+placed+successfully&orderId=${order._id}`);
+    // Redirect to the frontend payment page with order details
+    res.redirect(`/telebirr-payment-demo?orderId=${order._id}&amount=${order.totalPrice}`);
   } catch (error) {
     console.error('Browser checkout error:', error);
-    // Redirect to error message page instead of returning JSON for browser requests
-    res.redirect(`/api/messages?type=error&message=${encodeURIComponent(error.message || 'Error processing checkout')}`);
+    // Redirect to an error message page, but on the frontend
+    res.redirect(`/payment-error?message=${encodeURIComponent(error.message || 'Error processing checkout')}`);
   }
 });
 

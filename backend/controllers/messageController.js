@@ -216,100 +216,93 @@ const getMessage = (req, res) => {
               const data = receiptData.data;
 
               // Generate receipt HTML
-              let receiptHtml = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                  <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="margin: 0; font-size: 24px;">ORDER RECEIPT</h1>
-                    <div style="font-size: 18px; font-weight: bold; color: #007bff; margin-top: 10px;">Order ID: ${data.orderId}</div>
-                    <div style="font-size: 16px; color: #666; margin-top: 5px;">Date: ${data.orderDate}</div>
-                  </div>
+              let receiptHtml = '';
+              receiptHtml += '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">';
+              receiptHtml += '<div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">';
+              receiptHtml += '<h1 style="margin: 0; font-size: 24px;">ORDER RECEIPT</h1>';
+              receiptHtml += '<div style="font-size: 18px; font-weight: bold; color: #007bff; margin-top: 10px;">Order ID: ' + data.orderId + '</div>';
+              receiptHtml += '<div style="font-size: 16px; color: #666; margin-top: 5px;">Date: ' + data.orderDate + '</div>';
+              receiptHtml += '</div>';
 
-                  <div style="margin-bottom: 25px;">
-                    <div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">
-                      Order Items
-                    </div>
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                      <thead>
-                        <tr style="background-color: #f8f9fa;">
-                          <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Product</th>
-                          <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Quantity</th>
-                          <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Price</th>
-                          <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-              `;
+              receiptHtml += '<div style="margin-bottom: 25px;">';
+              receiptHtml += '<div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">Order Items</div>';
+              receiptHtml += '<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">';
+              receiptHtml += '<thead>';
+              receiptHtml += '<tr style="background-color: #f8f9fa;">';
+              receiptHtml += '<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Product</th>';
+              receiptHtml += '<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Quantity</th>';
+              receiptHtml += '<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Price</th>';
+              receiptHtml += '<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Total</th>';
+              receiptHtml += '</tr>';
+              receiptHtml += '</thead>';
+              receiptHtml += '<tbody>';
 
               data.orderItems.forEach(item => {
-                receiptHtml += `
-                  <tr>
-                    <td style="padding: 12px; border: 1px solid #ddd;">${item.name}</td>
-                    <td style="padding: 12px; border: 1px solid #ddd;">${item.quantity}</td>
-                    <td style="padding: 12px; border: 1px solid #ddd;">$${parseFloat(item.price).toFixed(2)}</td>
-                    <td style="padding: 12px; border: 1px solid #ddd;">$${item.total}</td>
-                  </tr>
-                `;
+                receiptHtml += '<tr>';
+                receiptHtml += '<td style="padding: 12px; border: 1px solid #ddd;">' + item.name + '</td>';
+                receiptHtml += '<td style="padding: 12px; border: 1px solid #ddd;">' + item.quantity + '</td>';
+                receiptHtml += '<td style="padding: 12px; border: 1px solid #ddd;">$' + parseFloat(item.price).toFixed(2) + '</td>';
+                receiptHtml += '<td style="padding: 12px; border: 1px solid #ddd;">$' + item.total + '</td>';
+                receiptHtml += '</tr>';
               });
 
-              receiptHtml += `
-                      </tbody>
-                    </table>
-                  </div>
+              receiptHtml += '</tbody>';
+              receiptHtml += '</table>';
+              receiptHtml += '</div>';
 
-                  <div style="margin-bottom: 25px;">
-                    <div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">
-                      Order Summary
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                      <span>Items Price:</span>
-                      <span>$${data.itemsPrice.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                      <span>Tax:</span>
-                      <span>$${data.taxPrice.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
-                      <span>Shipping:</span>
-                      <span>$${data.shippingPrice.toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #333; font-weight: bold; font-size: 18px;">
-                      <span>Total:</span>
-                      <span>$${data.totalPrice.toFixed(2)}</span>
-                    </div>
-                  </div>
+              receiptHtml += '<div style="margin-bottom: 25px;">';
+              receiptHtml += '<div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">Order Summary</div>';
+              receiptHtml += '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">';
+              receiptHtml += '<span>Items Price:</span>';
+              receiptHtml += '<span>$' + data.itemsPrice.toFixed(2) + '</span>';
+              receiptHtml += '</div>';
+              receiptHtml += '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">';
+              receiptHtml += '<span>Tax:</span>';
+              receiptHtml += '<span>$' + data.taxPrice.toFixed(2) + '</span>';
+              receiptHtml += '</div>';
+              receiptHtml += '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">';
+              receiptHtml += '<span>Shipping:</span>';
+              receiptHtml += '<span>$' + data.shippingPrice.toFixed(2) + '</span>';
+              receiptHtml += '</div>';
+              receiptHtml += '<div style="display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #333; font-weight: bold; font-size: 18px;">';
+              receiptHtml += '<span>Total:</span>';
+              receiptHtml += '<span>$' + data.totalPrice.toFixed(2) + '</span>';
+              receiptHtml += '</div>';
+              receiptHtml += '</div>';
 
-                  <div style="margin-bottom: 25px;">
-                    <div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">
-                      Shipping Address
-                    </div>
-                    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff;">
-                      <p style="margin: 5px 0;"><strong>${data.shippingAddress.fullName}</strong></p>
-                      <p style="margin: 5px 0;">${data.shippingAddress.address}</p>
-                      <p style="margin: 5px 0;">${data.shippingAddress.city}, ${data.shippingAddress.state} ${data.shippingAddress.zipCode}</p>
-                      <p style="margin: 5px 0;">${data.shippingAddress.country}</p>
-                      ${data.shippingAddress.phone ? `<p style="margin: 5px 0;">Phone: ${data.shippingAddress.phone}</p>` : ''}
-                    </div>
-                  </div>
+              receiptHtml += '<div style="margin-bottom: 25px;">';
+              receiptHtml += '<div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">Shipping Address</div>';
+              receiptHtml += '<div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff;">';
+              receiptHtml += '<p style="margin: 5px 0;"><strong>' + data.shippingAddress.fullName + '</strong></p>';
+              receiptHtml += '<p style="margin: 5px 0;">' + data.shippingAddress.address + '</p>';
+              receiptHtml += '<p style="margin: 5px 0;">' + data.shippingAddress.city + ', ' + data.shippingAddress.state + ' ' + data.shippingAddress.zipCode + '</p>';
+              receiptHtml += '<p style="margin: 5px 0;">' + data.shippingAddress.country + '</p>';
+              if (data.shippingAddress.phone) {
+                receiptHtml += '<p style="margin: 5px 0;">Phone: ' + data.shippingAddress.phone + '</p>';
+              }
+              receiptHtml += '</div>';
+              receiptHtml += '</div>';
 
-                  <div style="margin-bottom: 25px;">
-                    <div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">
-                      Payment Information
-                    </div>
-                    <div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745;">
-                      <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${data.paymentMethod}</p>
-                      <p style="margin: 5px 0;"><strong>Status:</strong> ${data.isPaid ? 'PAID' : 'PENDING'}</p>
-                      ${data.paidAt ? `<p style="margin: 5px 0;"><strong>Paid At:</strong> ${data.paidAt}</p>` : ''}
-                      ${data.paymentResult ? `<p style="margin: 5px 0;"><strong>Transaction ID:</strong> ${data.paymentResult.id}</p>` : ''}
-                    </div>
-                  </div>
+              receiptHtml += '<div style="margin-bottom: 25px;">';
+              receiptHtml += '<div style="font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px; color: #333;">Payment Information</div>';
+              receiptHtml += '<div style="background-color: #e8f5e9; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745;">';
+              receiptHtml += '<p style="margin: 5px 0;"><strong>Payment Method:</strong> ' + data.paymentMethod + '</p>';
+              receiptHtml += '<p style="margin: 5px 0;"><strong>Status:</strong> ' + (data.isPaid ? 'PAID' : 'PENDING') + '</p>';
+              if (data.paidAt) {
+                receiptHtml += '<p style="margin: 5px 0;"><strong>Paid At:</strong> ' + data.paidAt + '</p>';
+              }
+              if (data.paymentResult && data.paymentResult.id) {
+                receiptHtml += '<p style="margin: 5px 0;"><strong>Transaction ID:</strong> ' + data.paymentResult.id + '</p>';
+              }
+              receiptHtml += '</div>';
+              receiptHtml += '</div>';
 
-                  <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">
-                    <p>Thank you for your purchase!</p>
-                    <p>If you have any questions about your order, please contact us.</p>
-                    <p>This is an automated receipt, please do not reply directly to this message.</p>
-                  </div>
-                </div>
-              `;
+              receiptHtml += '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #666; font-size: 14px;">';
+              receiptHtml += '<p>Thank you for your purchase!</p>';
+              receiptHtml += '<p>If you have any questions about your order, please contact us.</p>';
+              receiptHtml += '<p>This is an automated receipt, please do not reply directly to this message.</p>';
+              receiptHtml += '</div>';
+              receiptHtml += '</div>';
 
               document.getElementById('receipt-content').innerHTML = receiptHtml;
             } catch (error) {
@@ -323,7 +316,7 @@ const getMessage = (req, res) => {
             // Try to get token from localStorage (common for JWT tokens)
             const token = localStorage.getItem('token') || localStorage.getItem('authToken');
             if (token) {
-              return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+              return token.startsWith('Bearer ') ? token : 'Bearer ' + token;
             }
 
             // If not in localStorage, try to get from cookies
@@ -331,7 +324,7 @@ const getMessage = (req, res) => {
             for (let cookie of cookies) {
               const [name, value] = cookie.trim().split('=');
               if (name === 'token' || name === 'authToken') {
-                return value ? `Bearer ${value}` : '';
+                return value ? 'Bearer ' + value : '';
               }
             }
 
@@ -345,19 +338,19 @@ const getMessage = (req, res) => {
 
           // Auto-download the PDF receipt after a short delay
           setTimeout(() => {
-            ${orderId ? `
-            // Create a temporary link and click it to trigger download
-            const link = document.createElement('a');
-            link.href = '/api/receipt/${orderId}/receipt?download=true';
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if ("${orderId}") {
+              // Create a temporary link and click it to trigger download
+              const link = document.createElement('a');
+              link.href = '/api/receipt/${orderId}/receipt?download=true';
+              link.style.display = 'none';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
 
-            // Show a message that download has started
-            const downloadStatus = document.getElementById('downloadStatus');
-            downloadStatus.style.display = 'block';
-            ` : ''}
+              // Show a message that download has started
+              const downloadStatus = document.getElementById('downloadStatus');
+              downloadStatus.style.display = 'block';
+            }
           }, 1500); // Wait 1.5 seconds before auto-download
 
           // Also redirect to homepage after some time
@@ -366,12 +359,15 @@ const getMessage = (req, res) => {
           }, 8000); // Wait 8 seconds before redirecting
 
           // Handle manual download if auto-download fails
-          document.getElementById('downloadLink')?.addEventListener('click', function(e) {
-            setTimeout(() => {
-              const downloadStatus = document.getElementById('downloadStatus');
-              downloadStatus.style.display = 'block';
-            }, 500);
-          });
+          var downloadLink = document.getElementById('downloadLink');
+          if (downloadLink) {
+            downloadLink.addEventListener('click', function(e) {
+              setTimeout(function() {
+                const downloadStatus = document.getElementById('downloadStatus');
+                downloadStatus.style.display = 'block';
+              }, 500);
+            });
+          }
         </script>
       </body>
       </html>

@@ -4,34 +4,6 @@ import { motion } from 'framer-motion';
 import { userAPI } from '../../services/api';
 import { FaSearch, FaEdit, FaTrash } from 'react-icons/fa';
 
-// Mock data for users
-const mockUsers = [
-  {
-    _id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'customer',
-    phone: '+1 (555) 123-4567',
-    createdAt: '2023-01-15T10:30:00.000Z'
-  },
-  {
-    _id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'seller',
-    phone: '+1 (555) 987-6543',
-    createdAt: '2023-02-20T14:45:00.000Z'
-  },
-  {
-    _id: '3',
-    name: 'Admin User',
-    email: 'admin@example.com',
-    role: 'admin',
-    phone: '+1 (555) 555-5555',
-    createdAt: '2023-01-01T00:00:00.000Z'
-  }
-];
-
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,13 +12,10 @@ const AdminUsers: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // In a real app, this would be: const response = await userAPI.getAll();
-        // For now, using mock data
-        setTimeout(() => {
-          setUsers(mockUsers);
-          setLoading(false);
-          document.title = 'Admin - Users - E-Shop';
-        }, 1000);
+        const response = await userAPI.getAll();
+        setUsers(response.data.data);
+        setLoading(false);
+        document.title = 'Admin - Users - E-Shop';
       } catch (error) {
         console.error('Error fetching users:', error);
         setLoading(false);
@@ -56,7 +25,7 @@ const AdminUsers: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,7 +43,7 @@ const AdminUsers: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        // In a real app, this would be: await userAPI.delete(id);
+        await userAPI.delete(id);
         setUsers(users.filter(user => user._id !== id));
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -93,7 +62,7 @@ const AdminUsers: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Manage Users</h1>
-      
+
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
@@ -107,7 +76,7 @@ const AdminUsers: React.FC = () => {
           <FaSearch className="absolute left-3 top-4 text-gray-400" />
         </div>
       </div>
-      
+
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -130,37 +99,37 @@ const AdminUsers: React.FC = () => {
               </tr>
             ) : (
               filteredUsers.map((user, index) => (
-                <motion.tr 
+                <motion.tr
                   key={user._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                    <div className="text-sm font-medium text-gray-900">{user.name || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{user.email}</div>
+                    <div className="text-sm text-gray-900">{user.email || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(user.role)}`}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(user.role || 'customer')}`}>
+                      {(user.role || 'customer').charAt(0).toUpperCase() + (user.role || 'customer').slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.phone || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.createdAt).toLocaleDateString()}
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link 
-                      to={`/admin/users/edit/${user._id}`} 
+                    <Link
+                      to={`/admin/users/edit/${user._id}`}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       <FaEdit />
                     </Link>
-                    <button 
+                    <button
                       onClick={() => handleDelete(user._id)}
                       className="text-red-600 hover:text-red-900"
                     >

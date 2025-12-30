@@ -2,44 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { productAPI, orderAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { FaShoppingCart, FaDollarSign, FaBox, FaChartBar, FaChartLine, FaUserTie } from 'react-icons/fa';
-
-// Mock data for seller dashboard
-const mockSellerStats = {
-  totalProducts: 12,
-  totalOrders: 24,
-  totalRevenue: 4567.89,
-  pendingOrders: 5,
-  recentOrders: [
-    { _id: '1', user: { name: 'John Doe' }, total: 129.99, date: '2023-09-20', status: 'delivered' },
-    { _id: '2', user: { name: 'Jane Smith' }, total: 89.50, date: '2023-09-19', status: 'processing' },
-    { _id: '3', user: { name: 'Bob Johnson' }, total: 249.99, date: '2023-09-18', status: 'shipped' },
-    { _id: '4', user: { name: 'Alice Williams' }, total: 199.99, date: '2023-09-17', status: 'delivered' },
-    { _id: '5', user: { name: 'Charlie Brown' }, total: 79.99, date: '2023-09-16', status: 'cancelled' },
-  ],
-  topSellingProducts: [
-    { _id: '1', name: 'Wireless Headphones', sold: 15 },
-    { _id: '2', name: 'Laptop Backpack', sold: 8 },
-    { _id: '3', name: 'Smart Watch', sold: 6 },
-    { _id: '4', name: 'Gaming Mouse', sold: 5 },
-    { _id: '5', name: 'Wireless Keyboard', sold: 4 },
-  ]
-};
 
 const SellerDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { state: authState } = useAuth();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // In a real app, this would make API calls to get seller-specific stats
-        // For now, using mock data
-        setTimeout(() => {
-          setStats(mockSellerStats);
-          setLoading(false);
-          document.title = 'Seller Dashboard - E-Shop';
-        }, 1000);
+        if (authState.user) {
+          const response = await productAPI.getSellerStats(authState.user._id);
+          setStats(response.data.data);
+        }
+        setLoading(false);
+        document.title = 'Seller Dashboard - E-Shop';
       } catch (error) {
         console.error('Error fetching stats:', error);
         setLoading(false);
@@ -47,9 +26,9 @@ const SellerDashboard: React.FC = () => {
     };
 
     fetchStats();
-  }, []);
+  }, [authState.user]);
 
-  if (loading) {
+  if (loading || !stats) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -127,7 +106,7 @@ const SellerDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600">Total Products</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalProducts || 0}</p>
               </div>
             </motion.div>
 
@@ -142,7 +121,7 @@ const SellerDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600">Total Orders</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalOrders || 0}</p>
               </div>
             </motion.div>
 
@@ -157,7 +136,7 @@ const SellerDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600">Pending Orders</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.pendingOrders}</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.pendingOrders || 0}</p>
               </div>
             </motion.div>
 
@@ -172,7 +151,7 @@ const SellerDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-600">Total Revenue</p>
-                <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900">${(stats.totalRevenue || 0).toLocaleString()}</p>
               </div>
             </motion.div>
           </div>
@@ -272,26 +251,29 @@ const SellerDashboard: React.FC = () => {
                 <Link to="/seller/orders" className="text-blue-600 hover:text-blue-800 font-medium">View All</Link>
               </div>
               <div className="space-y-4">
-                {stats.recentOrders.map((order: any) => (
-                  <div key={order._id} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <div>
-                      <p className="font-medium text-gray-900">Order #{order._id}</p>
-                      <p className="text-gray-600 text-sm">{order.user.name}</p>
-                      <p className="text-gray-500 text-sm">{order.date}</p>
+                {stats.recentOrders && stats.recentOrders.length > 0 ?
+                  stats.recentOrders.map((order: any) => (
+                    <div key={order._id} className="flex items-center justify-between border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <div>
+                        <p className="font-medium text-gray-900">Order #{order._id || 'N/A'}</p>
+                        <p className="text-gray-600 text-sm">{order.user?.name || 'N/A'}</p>
+                        <p className="text-gray-500 text-sm">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-lg text-gray-900">${(order.totalPrice || 0).toFixed(2)}</p>
+                        <span className={`inline-block text-xs px-3 py-1 rounded-full mt-1 ${
+                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                          order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {order.status || 'pending'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg text-gray-900">${order.total.toFixed(2)}</p>
-                      <span className={`inline-block text-xs px-3 py-1 rounded-full mt-1 ${
-                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                  : <p className="text-gray-500 text-center">No recent orders available</p>
+                }
               </div>
             </motion.div>
 
@@ -304,17 +286,20 @@ const SellerDashboard: React.FC = () => {
                 <Link to="/seller/products" className="text-blue-600 hover:text-blue-800 font-medium">View All</Link>
               </div>
               <div className="space-y-4">
-                {stats.topSellingProducts.map((product: any) => (
-                  <div key={product._id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">{product.name}</p>
-                      <p className="text-gray-600 text-sm">{product.sold} units sold</p>
+                {stats.topSellingProducts && stats.topSellingProducts.length > 0 ?
+                  stats.topSellingProducts.map((product: any) => (
+                    <div key={product._id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{product.name || 'N/A'}</p>
+                        <p className="text-gray-600 text-sm">{product.sold || 0} units sold</p>
+                      </div>
+                      <div className="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full">
+                        {product.sold || 0} sold
+                      </div>
                     </div>
-                    <div className="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full">
-                      {product.sold} sold
-                    </div>
-                  </div>
-                ))}
+                  ))
+                  : <p className="text-gray-500 text-center">No top selling products available</p>
+                }
               </div>
             </motion.div>
           </div>

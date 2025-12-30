@@ -2,8 +2,14 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
   try {
+    console.log('sendEmail function called with options:', {
+      email: options.email,
+      subject: options.subject
+    }); // Debug log
+
     // Check if nodemailer is properly loaded
     if (!nodemailer || typeof nodemailer.createTransport !== 'function') {
+      console.error('Nodemailer is not properly configured');
       throw new Error('Nodemailer is not properly configured');
     }
 
@@ -18,17 +24,44 @@ const sendEmail = async (options) => {
       },
     });
 
+    console.log('Transporter created, checking configuration...'); // Debug log
+
     // Verify transporter configuration
     if (!process.env.SMTP_HOST || !process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
       console.warn('Email configuration is missing. Please set SMTP_HOST, SMTP_EMAIL, and SMTP_PASSWORD in your environment variables.');
-      return; // Skip email sending if configuration is missing
+      throw new Error('Email configuration is missing. Please set SMTP_HOST, SMTP_EMAIL, and SMTP_PASSWORD in your environment variables.');
+    }
+
+    // Verify transporter connection
+    try {
+      console.log('Verifying SMTP connection...'); // Debug log
+      await transporter.verify();
+      console.log('SMTP connection verified successfully'); // Debug log
+    } catch (verifyError) {
+      console.error('SMTP connection verification failed:', verifyError);
+      throw new Error(`SMTP connection failed: ${verifyError.message}`);
     }
 
     // Define email options
+    let fromEmail;
+    if (process.env.SMTP_FROM_NAME && process.env.SMTP_FROM_EMAIL) {
+      fromEmail = `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`;
+    } else if (process.env.SMTP_EMAIL) {
+      fromEmail = process.env.SMTP_EMAIL;
+    } else if (process.env.SMTP_FROM_EMAIL) {
+      fromEmail = process.env.SMTP_FROM_EMAIL;
+    } else {
+      fromEmail = '"E-Commerce Support" <noreply@ecommerce.com>';
+    }
+
+    console.log('Email options prepared:', {
+      from: fromEmail,
+      to: options.email,
+      subject: options.subject
+    }); // Debug log
+
     const mailOptions = {
-      from: process.env.SMTP_FROM_NAME ?
-        `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>` :
-        process.env.SMTP_FROM_EMAIL,
+      from: fromEmail,
       to: options.email,
       subject: options.subject,
       text: options.text,
@@ -36,7 +69,9 @@ const sendEmail = async (options) => {
     };
 
     // Send email
+    console.log('Sending email...'); // Debug log
     await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully'); // Debug log
   } catch (error) {
     console.error('Error in sendEmail function:', error);
     throw error;

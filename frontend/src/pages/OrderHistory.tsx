@@ -1,69 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { orderAPI } from '../services/api';
-
-// Mock data for orders
-const mockOrders = [
-  {
-    _id: '1',
-    orderItems: [
-      { name: 'Wireless Bluetooth Headphones', quantity: 1, image: 'https://via.placeholder.com/100x100' },
-      { name: 'Laptop Backpack', quantity: 2, image: 'https://via.placeholder.com/100x100' }
-    ],
-    shippingAddress: {
-      fullName: 'John Doe',
-      city: 'New York',
-      state: 'NY'
-    },
-    paymentMethod: 'card',
-    itemsPrice: 199.97,
-    taxPrice: 15.99,
-    shippingPrice: 5.99,
-    totalPrice: 221.95,
-    isPaid: true,
-    paidAt: '2023-09-15T10:30:00.000Z',
-    isDelivered: true,
-    deliveredAt: '2023-09-20T14:45:00.000Z',
-    status: 'delivered',
-    createdAt: '2023-09-15T10:00:00.000Z'
-  },
-  {
-    _id: '2',
-    orderItems: [
-      { name: 'Smart Watch Series 5', quantity: 1, image: 'https://via.placeholder.com/100x100' }
-    ],
-    shippingAddress: {
-      fullName: 'John Doe',
-      city: 'New York',
-      state: 'NY'
-    },
-    paymentMethod: 'cash on delivery',
-    itemsPrice: 199.99,
-    taxPrice: 15.99,
-    shippingPrice: 5.99,
-    totalPrice: 221.97,
-    isPaid: false,
-    isDelivered: false,
-    status: 'processing',
-    createdAt: '2023-09-20T11:15:00.000Z'
-  }
-];
+import { useAuth } from '../context/AuthContext';
+import { orderAPI, paymentAPI, accountAPI } from '../services/api';
+import api from '../services/api';
+import { toast } from 'react-hot-toast';
+import { loadStripe } from '@stripe/stripe-js';
 
 const OrderHistory: React.FC = () => {
+  const { state: authState } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // In a real app, this would be: const response = await orderAPI.getMyOrders();
-        // For now, using mock data
-        setTimeout(() => {
-          setOrders(mockOrders);
-          setLoading(false);
-          document.title = 'Order History - E-Shop';
-        }, 1000);
+        const response = await orderAPI.getMyOrders();
+        setOrders(response.data.data);
+        setLoading(false);
+        document.title = 'Order History - E-Shop';
       } catch (error) {
         console.error('Error fetching orders:', error);
         setLoading(false);
@@ -81,6 +36,93 @@ const OrderHistory: React.FC = () => {
       case 'delivered': return 'bg-green-100 text-green-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const markAsReceived = async (orderId: string) => {
+    try {
+      await orderAPI.markAsReceived(orderId);
+      // Update the order in the local state
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId
+            ? { ...order, isReceived: true, status: 'received', receivedAt: new Date().toISOString() }
+            : order
+        )
+      );
+      toast.success('Order marked as received successfully!');
+    } catch (error: any) {
+      console.error('Error marking order as received:', error);
+      toast.error(error.response?.data?.message || 'Failed to mark order as received');
+    }
+  };
+
+  const processInternalPayment = async (orderId: string, amount: number) => {
+    try {
+      // Check if the payment method is internal (account balance) and use appropriate API
+      const response = await accountAPI.processAccountPayment(orderId, amount);
+      if (response.data.success) {
+        // Update the order in the local state
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order._id === orderId
+              ? { ...order, isPaid: true, paidAt: new Date().toISOString() }
+              : order
+          )
+        );
+        toast.success('Payment processed successfully!');
+      } else {
+        toast.error(response.data.message || 'Payment failed. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Error processing internal payment:', error);
+      toast.error(error.response?.data?.message || 'Error processing payment');
+    }
+  };
+
+  const processCardPayment = async (orderId: string, amount: number) => {
+    // Check if Stripe key is available before proceeding
+    const stripeKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+    if (!stripeKey || stripeKey.trim() === '') {
+      toast.error('Payment gateway is not configured. Please contact support or try another payment method.');
+      return;
+    }
+
+    if (window.confirm('This will redirect you to complete your card payment. Do you want to continue?')) {
+      // Redirect to checkout page to complete payment
+      // We'll pass the order ID as a query parameter so the checkout page can handle the existing order
+      window.location.href = `/checkout?orderId=${orderId}`;
+    }
+  };
+
+  // Check if the current user is a seller of any product in this order
+  const isSellerOfOrder = (order: any) => {
+    if (!order || !order.orderItems) return false;
+
+    // Check if any of the products in the order belong to the current user
+    return order.orderItems.some((item: any) =>
+      item.product && item.product.seller &&
+      item.product.seller._id === authState.user?._id
+    );
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const response = await api.put(`/orders/${orderId}/seller-update`, { status: newStatus });
+
+      // Update the order in the local state
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId
+            ? { ...order, status: newStatus }
+            : order
+        )
+      );
+
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (error: any) {
+      console.error('Error updating order status:', error);
+      toast.error(error.response?.data?.message || 'Failed to update order status');
     }
   };
 
@@ -140,9 +182,11 @@ const OrderHistory: React.FC = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Payment Method</h4>
                   <p className="text-gray-700">
-                    {order.paymentMethod === 'card' ? 'Credit/Debit Card' : 
-                     order.paymentMethod === 'mobile banking' ? 'Mobile Banking' : 
-                     'Cash on Delivery'}
+                    {order.paymentMethod === 'card' ? 'Credit/Debit Card' :
+                     order.paymentMethod === 'mobile banking' ? 'Mobile Banking' :
+                     order.paymentMethod === 'cash on delivery' ? 'Cash on Delivery' :
+                     order.paymentMethod === 'internal' ? 'Internal Account' :
+                     order.paymentMethod}
                   </p>
                   <p className={`mt-1 ${order.isPaid ? 'text-green-600' : 'text-red-600'}`}>
                     {order.isPaid ? 'Paid' : 'Not Paid'}
@@ -177,14 +221,64 @@ const OrderHistory: React.FC = () => {
                     Total: <span className="font-bold">${order.totalPrice.toFixed(2)}</span>
                   </p>
                 </div>
-                
-                <div className="mt-4 md:mt-0">
-                  <Link 
-                    to={`/order/${order._id}`} 
+
+                <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
+                  <Link
+                    to={`/order/${order._id}`}
                     className="btn-primary py-2 px-4 text-sm"
                   >
                     View Details
                   </Link>
+
+                  {/* Show "Pay Now" button for unpaid orders with internal payment method */}
+                  {!order.isPaid && order.paymentMethod === 'internal' && (
+                    <button
+                      onClick={() => processInternalPayment(order._id, order.totalPrice)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Pay Now
+                    </button>
+                  )}
+
+                  {/* Show "Pay Now" button for unpaid orders with card payment method (in case webhook failed) */}
+                  {!order.isPaid && order.paymentMethod === 'card' && (
+                    <button
+                      onClick={() => processCardPayment(order._id, order.totalPrice)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Complete Payment
+                    </button>
+                  )}
+
+                  {/* Show "Received" button only for sent orders that haven't been received yet */}
+                  {order.status === 'sent' && !order.isReceived && (
+                    <button
+                      onClick={() => markAsReceived(order._id)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Received
+                    </button>
+                  )}
+
+                  {/* Show "Mark as Delivered" button for sellers with shipped orders */}
+                  {isSellerOfOrder(order) && order.status === 'shipped' && (
+                    <button
+                      onClick={() => updateOrderStatus(order._id, 'delivered')}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    >
+                      Mark as Delivered
+                    </button>
+                  )}
+
+                  {/* Show "Mark as Shipped" button for sellers with processing orders */}
+                  {isSellerOfOrder(order) && order.status === 'processing' && (
+                    <button
+                      onClick={() => updateOrderStatus(order._id, 'shipped')}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Mark as Shipped
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

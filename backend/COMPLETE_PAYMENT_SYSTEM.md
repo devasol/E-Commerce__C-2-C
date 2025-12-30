@@ -49,9 +49,9 @@ fetch('/api/cart', {
 
 ### 4. Checkout Process
 
-#### Option A: Cash on Delivery (COD)
+#### Option A: TeleBirr Payment
 ```javascript
-// Checkout with COD
+// Checkout with TeleBirr
 fetch('/api/cart/checkout', {
   method: 'POST',
   headers: {
@@ -68,13 +68,14 @@ fetch('/api/cart/checkout', {
       country: 'Ethiopia',
       phone: '+251912345678'
     },
-    paymentMethod: 'cash on delivery'
+    paymentMethod: 'telebirr'
   })
 })
 .then(response => response.json())
 .then(data => {
   if (data.success) {
     // Order created successfully
+    // Payment processed immediately
     // Email confirmation sent automatically
     // Cart cleared automatically
     console.log('Order created:', data.data.order._id);
@@ -92,86 +93,13 @@ fetch('/api/cart/checkout', {
 });
 ```
 
-#### Option B: Stripe Card Payment
-```javascript
-// 1. Create order first with card payment method
-fetch('/api/cart/checkout', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${jwtToken}`
-  },
-  body: JSON.stringify({
-    shippingAddress: {
-      fullName: 'John Doe',
-      address: '123 Main St',
-      city: 'Addis Ababa',
-      state: 'AA',
-      zipCode: '1000',
-      country: 'Ethiopia',
-      phone: '+251912345678'
-    },
-    paymentMethod: 'card' // or 'stripe'
-  })
-})
-.then(response => response.json())
-.then(data => {
-  if (data.success) {
-    // 2. Process payment with Stripe
-    const order = data.data.order;
-    
-    // Process payment
-    fetch('/api/payment/process', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`
-      },
-      body: JSON.stringify({
-        amount: order.totalPrice,
-        orderId: order._id
-      })
-    })
-    .then(response => response.json())
-    .then(paymentData => {
-      if (paymentData.success) {
-        // 3. Complete payment with Stripe.js
-        const stripe = Stripe('YOUR_STRIPE_PUBLISHABLE_KEY');
-        
-        stripe.confirmCardPayment(paymentData.client_secret, {
-          payment_method: {
-            card: cardElement, // Your card element
-            billing_details: {
-              name: 'John Doe'
-            }
-          }
-        }).then(result => {
-          if (result.error) {
-            console.error('Payment failed:', result.error.message);
-          } else if (result.paymentIntent.status === 'succeeded') {
-            console.log('Payment successful!');
-            // Order will be marked as paid via webhook
-          }
-        });
-      }
-    });
-  }
-});
-```
-
 ## Payment Methods Supported
 
-### 1. Cash on Delivery (COD)
+### 1. TeleBirr Payment (Demo)
 - Order is created immediately
-- Order status is marked as paid
+- Order status is marked as paid immediately
 - Email confirmation sent automatically
-- No payment processing required
-
-### 2. Stripe Card Payments
-- Order is created with pending payment status
-- Payment processed via Stripe
-- Webhook updates order status when payment succeeds
-- Email confirmation sent automatically
+- Demo payment processing for Ethiopian mobile payments
 
 ## API Endpoints
 
@@ -189,8 +117,10 @@ fetch('/api/cart/checkout', {
 - `GET /api/orders/:id` - Get specific order
 
 ### Payment Processing
-- `POST /api/payment/process` - Process Stripe payment
-- `POST /api/payment/webhook` - Handle Stripe webhooks (configured on Stripe dashboard)
+- `POST /api/payment/process` - Process TeleBirr payment
+- `POST /api/payment/webhook` - Handle TeleBirr webhooks
+- `POST /api/payment/confirm` - Confirm TeleBirr payment
+- `POST /api/payment/internal` - Process TeleBirr payment directly
 
 ### Receipt Management
 - `GET /api/receipt/:orderId/receipt` - View receipt in browser
@@ -237,14 +167,14 @@ class CheckoutService {
     return response.json();
   }
 
-  static async processPayment(orderId, amount) {
+  static async processPayment(orderId, amount, paymentMethod = 'telebirr') {
     const response = await fetch('/api/payment/process', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify({ orderId, amount })
+      body: JSON.stringify({ orderId, amount, paymentMethod })
     });
     return response.json();
   }
@@ -253,7 +183,7 @@ class CheckoutService {
 // Usage
 async function completeCheckout() {
   try {
-    // For COD
+    // For TeleBirr
     const result = await CheckoutService.checkout(
       {
         fullName: 'John Doe',
@@ -264,7 +194,7 @@ async function completeCheckout() {
         country: 'Ethiopia',
         phone: '+251912345678'
       },
-      'cash on delivery'
+      'telebirr'
     );
 
     if (result.success) {
@@ -276,14 +206,4 @@ async function completeCheckout() {
 }
 ```
 
-## Webhook Configuration
-For Stripe webhooks to work properly, you need to configure them in your Stripe dashboard:
-- Endpoint: `https://yourdomain.com/api/payment/webhook`
-- Events: `payment_intent.succeeded`
-
-For local development, you can use Stripe CLI:
-```bash
-stripe listen --forward-to localhost:5000/api/payment/webhook
-```
-
-This complete system handles all aspects of e-commerce: cart management, checkout process, multiple payment methods, email notifications, and proper error handling.
+This complete system handles all aspects of e-commerce: cart management, checkout process, TeleBirr payment method, email notifications, and proper error handling.

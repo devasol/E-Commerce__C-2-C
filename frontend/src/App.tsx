@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, createBrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -12,18 +13,23 @@ import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import ForgotPassword from './pages/ForgotPassword';
 import OrderHistory from './pages/OrderHistory';
+import OrderDetails from './pages/OrderDetails';
 import Wishlist from './pages/Wishlist';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminProducts from './pages/Admin/Products';
 import AdminOrders from './pages/Admin/Orders';
 import AdminUsers from './pages/Admin/Users';
+import AdminSalesReport from './pages/Admin/SalesReport';
 import SellerDashboard from './pages/Seller/Dashboard';
 import SellerProducts from './pages/Seller/Products';
 import SellerOrders from './pages/Seller/Orders';
+import AddProduct from './pages/Seller/AddProduct';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import SellerRoute from './components/SellerRoute';
+import TelebirrPaymentDemo from './pages/TelebirrPaymentDemo';
 import './styles/globals.css';
 
 function App() {
@@ -41,6 +47,8 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/telebirr-payment-demo" element={<TelebirrPaymentDemo />} />
 
                 {/* Protected Routes */}
                 <Route path="/profile" element={
@@ -51,6 +59,11 @@ function App() {
                 <Route path="/order-history" element={
                   <PrivateRoute>
                     <OrderHistory />
+                  </PrivateRoute>
+                } />
+                <Route path="/order/:id" element={
+                  <PrivateRoute>
+                    <OrderDetails />
                   </PrivateRoute>
                 } />
                 <Route path="/checkout" element={
@@ -85,6 +98,11 @@ function App() {
                     <AdminUsers />
                   </AdminRoute>
                 } />
+                <Route path="/admin/reports" element={
+                  <AdminRoute>
+                    <AdminSalesReport />
+                  </AdminRoute>
+                } />
 
                 {/* Seller Routes */}
                 <Route path="/seller/dashboard" element={
@@ -102,9 +120,15 @@ function App() {
                     <SellerOrders />
                   </SellerRoute>
                 } />
+                <Route path="/seller/products/create" element={
+                  <SellerRoute>
+                    <AddProduct />
+                  </SellerRoute>
+                } />
               </Routes>
             </main>
             <Footer />
+            <Toaster position="top-right" />
           </div>
         </Router>
       </CartProvider>

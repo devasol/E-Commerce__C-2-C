@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Order = require('../models/Order');
 const ErrorResponse = require('../utils/errorResponse');
 
 // @desc      Get all products
@@ -291,7 +292,8 @@ exports.deleteProduct = async (req, res, next) => {
 // @access    Private
 exports.getProductsBySeller = async (req, res, next) => {
   try {
-    const products = await Product.find({ seller: req.params.id });
+    const products = await Product.find({ seller: req.params.id })
+      .sort({ createdAt: -1 }); // Sort by newest first
 
     res.status(200).json({
       success: true,
@@ -303,6 +305,73 @@ exports.getProductsBySeller = async (req, res, next) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching seller products'
+    });
+  }
+};
+
+// @desc      Get seller dashboard stats
+// @route     GET /api/products/seller/:id/stats
+// @access    Private/Seller
+exports.getSellerStats = async (req, res, next) => {
+  try {
+    const sellerId = req.params.id;
+
+    // Get seller's products
+    const products = await Product.find({ seller: sellerId });
+    const totalProducts = products.length;
+
+    // Get orders for seller's products
+    const orderItems = await Order.find({
+      'orderItems.product': { $in: products.map(p => p._id) }
+    });
+
+    // Calculate total orders
+    const totalOrders = orderItems.length;
+
+    // Calculate total revenue
+    let totalRevenue = 0;
+    let pendingOrders = 0;
+
+    orderItems.forEach(order => {
+      totalRevenue += order.totalPrice;
+      if (order.status === 'pending' || order.status === 'processing') {
+        pendingOrders++;
+      }
+    });
+
+    // Get recent orders
+    const recentOrders = await Order.find({
+      'orderItems.product': { $in: products.map(p => p._id) }
+    })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .populate('user', 'name email');
+
+    // Get top selling products
+    const topSellingProducts = await Product.find({
+      seller: sellerId
+    })
+    .sort({ sold: -1 })
+    .limit(5);
+
+    const stats = {
+      totalProducts,
+      totalOrders,
+      totalRevenue,
+      pendingOrders,
+      recentOrders,
+      topSellingProducts
+    };
+
+    res.status(200).json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Error in getSellerStats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching seller stats'
     });
   }
 };

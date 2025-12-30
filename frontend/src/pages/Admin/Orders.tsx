@@ -4,47 +4,6 @@ import { motion } from 'framer-motion';
 import { orderAPI } from '../../services/api';
 import { FaSearch, FaEdit } from 'react-icons/fa';
 
-// Mock data for orders
-const mockOrders = [
-  {
-    _id: '1',
-    user: { name: 'John Doe', email: 'john@example.com' },
-    orderItems: [
-      { name: 'Wireless Headphones', quantity: 1 },
-      { name: 'Laptop Backpack', quantity: 2 }
-    ],
-    shippingAddress: { city: 'New York', state: 'NY' },
-    paymentMethod: 'card',
-    itemsPrice: 199.97,
-    taxPrice: 15.99,
-    shippingPrice: 5.99,
-    totalPrice: 221.95,
-    isPaid: true,
-    paidAt: '2023-09-15T10:30:00.000Z',
-    isDelivered: true,
-    deliveredAt: '2023-09-20T14:45:00.000Z',
-    status: 'delivered',
-    createdAt: '2023-09-15T10:00:00.000Z'
-  },
-  {
-    _id: '2',
-    user: { name: 'Jane Smith', email: 'jane@example.com' },
-    orderItems: [
-      { name: 'Smart Watch', quantity: 1 }
-    ],
-    shippingAddress: { city: 'Los Angeles', state: 'CA' },
-    paymentMethod: 'cash on delivery',
-    itemsPrice: 199.99,
-    taxPrice: 15.99,
-    shippingPrice: 5.99,
-    totalPrice: 221.97,
-    isPaid: false,
-    isDelivered: false,
-    status: 'processing',
-    createdAt: '2023-09-20T11:15:00.000Z'
-  }
-];
-
 const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,13 +12,10 @@ const AdminOrders: React.FC = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // In a real app, this would be: const response = await orderAPI.getAll();
-        // For now, using mock data
-        setTimeout(() => {
-          setOrders(mockOrders);
-          setLoading(false);
-          document.title = 'Admin - Orders - E-Shop';
-        }, 1000);
+        const response = await orderAPI.getAll();
+        setOrders(response.data.data);
+        setLoading(false);
+        document.title = 'Admin - Orders - E-Shop';
       } catch (error) {
         console.error('Error fetching orders:', error);
         setLoading(false);
@@ -69,7 +25,7 @@ const AdminOrders: React.FC = () => {
     fetchOrders();
   }, []);
 
-  const filteredOrders = orders.filter(order => 
+  const filteredOrders = orders.filter(order =>
     order._id.includes(searchTerm) ||
     order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,7 +54,7 @@ const AdminOrders: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Manage Orders</h1>
-      
+
       {/* Search */}
       <div className="mb-6">
         <div className="relative">
@@ -112,7 +68,7 @@ const AdminOrders: React.FC = () => {
           <FaSearch className="absolute left-3 top-4 text-gray-400" />
         </div>
       </div>
-      
+
       {/* Orders Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -136,7 +92,7 @@ const AdminOrders: React.FC = () => {
               </tr>
             ) : (
               filteredOrders.map((order, index) => (
-                <motion.tr 
+                <motion.tr
                   key={order._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -146,33 +102,35 @@ const AdminOrders: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900">#{order._id}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{order.user.name}</div>
-                    <div className="text-sm text-gray-500">{order.user.email}</div>
+                    <div className="text-sm font-medium text-gray-900">{order.user?.name || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">{order.user?.email || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {order.orderItems.map((item: any, idx: number) => (
-                        <div key={idx}>
-                          {item.name} ({item.quantity})
-                          {idx < order.orderItems.length - 1 && ', '}
-                        </div>
-                      ))}
+                      {order.orderItems && order.orderItems.length > 0 ?
+                        order.orderItems.map((item: any, idx: number) => (
+                          <div key={idx}>
+                            {item.name} ({item.quantity})
+                            {idx < order.orderItems.length - 1 && ', '}
+                          </div>
+                        ))
+                        : 'No items'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${order.totalPrice.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">${(order.totalPrice || 0).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status || 'pending')}`}>
+                      {(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link 
-                      to={`/admin/orders/${order._id}`} 
+                    <Link
+                      to={`/admin/orders/${order._id}`}
                       className="text-blue-600 hover:text-blue-900"
                     >
                       <FaEdit />

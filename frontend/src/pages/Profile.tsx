@@ -10,6 +10,14 @@ const Profile: React.FC = () => {
     email: authState.user?.email || ''
   });
 
+  const [roleData, setRoleData] = useState<{
+    role: 'customer' | 'seller';
+  }>({
+    role: (authState.user?.role === 'customer' || authState.user?.role === 'seller')
+      ? authState.user.role
+      : 'customer'
+  });
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -24,6 +32,11 @@ const Profile: React.FC = () => {
       setUserData({
         name: authState.user.name || '',
         email: authState.user.email || ''
+      });
+      setRoleData({
+        role: (authState.user.role === 'customer' || authState.user.role === 'seller')
+          ? authState.user.role
+          : 'customer'
       });
     }
     document.title = 'My Profile - E-Shop';
@@ -151,7 +164,26 @@ const Profile: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleUpdateProfile}>
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                setError('');
+                setSuccessMessage('');
+
+                try {
+                  // Combine profile data with role data
+                  const updateData = {
+                    ...userData,
+                    role: roleData.role
+                  };
+
+                  await updateProfile(updateData);
+
+                  setSuccessMessage('Profile and role updated successfully!');
+                } catch (err: any) {
+                  console.error('Update error:', err);
+                  setError(err.response?.data?.message || err.message || 'Failed to update profile');
+                }
+              }}>
                 <div className="grid grid-cols-1 gap-6">
                   <div>
                     <label className="block text-gray-700 mb-2 flex items-center">
@@ -186,12 +218,14 @@ const Profile: React.FC = () => {
                       <FaUserShield className="mr-2 text-gray-500" />
                       Account Type
                     </label>
-                    <input
-                      type="text"
-                      value={authState.user?.role || ''}
-                      disabled
-                      className="input-modern bg-gray-100"
-                    />
+                    <select
+                      value={roleData.role}
+                      onChange={(e) => setRoleData({...roleData, role: e.target.value as 'customer' | 'seller'})}
+                      className="input-modern"
+                    >
+                      <option value="customer">Customer</option>
+                      <option value="seller">Seller</option>
+                    </select>
                   </div>
 
                   <button
@@ -199,7 +233,7 @@ const Profile: React.FC = () => {
                     className="btn-primary-modern flex items-center justify-center w-full py-3"
                   >
                     <FaSave className="mr-2" />
-                    Update Profile
+                    Update Profile & Role
                   </button>
                 </div>
               </form>
