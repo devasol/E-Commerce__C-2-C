@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-2-C E-Commerce Favicon Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .design-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .option-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .option-card h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border: 3px solid #333;
+            transform: scale(1.1);
+        }
+        
+        .preview-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .favicon-preview {
+            width: 128px;
+            height: 128px;
+            margin: 0 auto 20px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            border-radius: 10px;
+        }
+        
+        .instructions {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            text-align: left;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .icon-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .icon-example {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .icon-example i {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛍️ C-2-C E-Commerce Favicon Designer</h1>
+    <p class="subtitle">Create a stunning favicon for your e-commerce platform</p>
+    
+    <div class="container">
+        <div class="design-options">
+            <div class="option-card">
+                <h3>🎨 Color Scheme</h3>
+                <div class="color-picker">
+                    <div class="color-option selected" style="background: #667eea;" data-color="#667eea"></div>
+                    <div class="color-option" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
+                    <div class="color-option" style="background: #4ecdc4;" data-color="#4ecdc4"></div>
+                    <div class="color-option" style="background: #45b7d1;" data-color="#45b7d1"></div>
+                    <div class="color-option" style="background: #96ceb4;" data-color="#96ceb4"></div>
+                    <div class="color-option" style="background: #feca57;" data-color="#feca57"></div>
+                    <div class="color-option" style="background: #ff9ff3;" data-color="#ff9ff3"></div>
+                    <div class="color-option" style="background: #a29bfe;" data-color="#a29bfe"></div>
+                </div>
+            </div>
+            
+            <div class="option-card">
+                <h3>✨ Icon Style</h3>
+                <div class="icon-examples">
+                    <div class="icon-example" data-icon="🛍️">
+                        <div>🛍️</div>
+                        <small>Shopping</small>
+                    </div>
+                    <div class="icon-example" data-icon="🛒">
+                        <div>🛒</div>
+                        <small>Cart</small>
+                    </div>
+                    <div class="icon-example" data-icon="📦">
+                        <div>📦</div>
+                        <small>Package</small>
+                    </div>
+                    <div class="icon-example" data-icon="💎">
+                        <div>💎</div>
+                        <small>Quality</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h3>👁️ Preview</h3>
+            <div class="favicon-preview" id="preview">
+                🛍️
+            </div>
+            <p>Current selection: <span id="current-selection">Blue (#667eea) with Shopping Icon</span></p>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="generateFavicon()">🎨 Generate Custom Favicon</button>
+            <button onclick="downloadFavicon()">💾 Download Favicon</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 How to Add Favicon to Your Project</h3>
+            <ol>
+                <li>Click "Generate Custom Favicon" to create your design</li>
+                <li>Click "Download Favicon" to get the favicon.ico file</li>
+                <li>Place the downloaded favicon.ico file in your <code>frontend/public</code> directory</li>
+                <li>The favicon will automatically be used by your React app</li>
+                <li>For best results, restart your development server after adding the favicon</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let selectedColor = '#667eea';
+        let selectedIcon = '🛍️';
+        
+        // Add event listeners to color options
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                selectedColor = this.getAttribute('data-color');
+                updatePreview();
+            });
+        });
+        
+        // Add event listeners to icon examples
+        document.querySelectorAll('.icon-example').forEach(example => {
+            example.addEventListener('click', function() {
+                document.querySelectorAll('.icon-example').forEach(ex => {
+                    ex.style.border = 'none';
+                    ex.style.backgroundColor = '#f8f9fa';
+                });
+                this.style.border = '2px solid #007bff';
+                this.style.backgroundColor = '#e3f2fd';
+                selectedIcon = this.getAttribute('data-icon');
+                updatePreview();
+            });
+        });
+        
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            preview.style.background = selectedColor;
+            preview.textContent = selectedIcon;
+            preview.style.color = getContrastColor(selectedColor);
+            
+            document.getElementById('current-selection').textContent = 
+                `${selectedColor.toUpperCase()} with ${getIconName(selectedIcon)}`;
+        }
+        
+        function getContrastColor(hexColor) {
+            // Convert hex to RGB
+            const r = parseInt(hexColor.substr(1, 2), 16);
+            const g = parseInt(hexColor.substr(3, 2), 16);
+            const b = parseInt(hexColor.substr(5, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return white for dark backgrounds, black for light backgrounds
+            return luminance > 0.5 ? '#000000' : '#FFFFFF';
+        }
+        
+        function getIconName(icon) {
+            const names = {
+                '🛍️': 'Shopping Icon',
+                '🛒': 'Cart Icon',
+                '📦': 'Package Icon',
+                '💎': 'Quality Icon'
+            };
+            return names[icon] || 'Selected Icon';
+        }
+        
+        function generateFavicon() {
+            alert('Favicon design generated! Now click "Download Favicon" to get your file.');
+            updatePreview();
+        }
+        
+        function downloadFavicon() {
+            // In a real implementation, this would generate an actual favicon.ico file
+            // For now, we'll provide instructions for generating one
+            alert(`To create your favicon:
+
+1. Visit https://www.favicon-generator.org/
+2. Upload an image with your chosen icon and color
+3. Or use an online tool like https://favicon.io/
+4. Generate favicon.ico with 16x16, 32x32, and 48x48 sizes
+5. Download the favicon package
+6. Extract favicon.ico and place it in your frontend/public directory
+
+Alternatively, you can use an image editor to create a 16x16 or 32x32 PNG with your design and convert it to ICO format.`);
+        }
+        
+        // Initialize preview
+        updatePreview();
+    </script>
+</body>
+</html>

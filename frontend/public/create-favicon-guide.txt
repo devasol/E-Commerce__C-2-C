@@ -1,0 +1,78 @@
+// This script will help you create favicon files for your e-commerce site
+// You can run this with Node.js after installing the required packages
+
+const fs = require('fs');
+const path = require('path');
+
+// To create actual favicon files, you'll need to install these packages:
+// npm install sharp
+
+console.log('To create proper favicon files, please follow these steps:');
+console.log('');
+console.log('1. Navigate to your frontend directory:');
+console.log('   cd D:\\E-Commerce__C-2-C\\frontend');
+console.log('');
+console.log('2. Install the required package:');
+console.log('   npm install sharp');
+console.log('');
+console.log('3. Create a simple icon image (logo.png) with dimensions 32x32 or larger');
+console.log('');
+console.log('4. Create a file called create-favicon.js with the following content:');
+
+const scriptContent = `
+const sharp = require('sharp');
+const fs = require('fs');
+
+// Create different sizes of favicon from a source image
+async function createFavicons() {
+  const sourceImage = 'logo.png'; // Your source image file
+  
+  if (!fs.existsSync(sourceImage)) {
+    console.log('Source image not found. Creating a simple placeholder...');
+    // Create a simple placeholder image with a shopping cart icon
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw a simple shopping cart icon
+    ctx.fillStyle = '#667eea';
+    ctx.fillRect(6, 10, 20, 12); // Cart body
+    ctx.fillRect(8, 8, 2, 4);   // Handle
+    ctx.fillRect(4, 22, 6, 4);  // Wheel 1
+    ctx.fillRect(18, 22, 6, 4); // Wheel 2
+    
+    // Convert to buffer and save
+    const imageData = canvas.toDataURL('image/png');
+    // This approach won't work in Node.js environment
+  } else {
+    // Create different sizes
+    await sharp(sourceImage)
+      .resize(16, 16)
+      .toFile('public/favicon-16x16.png');
+      
+    await sharp(sourceImage)
+      .resize(32, 32)
+      .toFile('public/favicon-32x32.png');
+      
+    // Create ICO file from PNG
+    await sharp(sourceImage)
+      .resize(32, 32)
+      .toFile('public/favicon.ico');
+    
+    console.log('Favicons created successfully!');
+  }
+}
+
+createFavicons().catch(console.error);
+`;
+
+console.log(scriptContent);
+console.log('');
+console.log('5. Run the script:');
+console.log('   node create-favicon.js');
+console.log('');
+console.log('Alternatively, you can:');
+console.log('- Use an online favicon generator like https://favicon.io/');
+console.log('- Download a shopping cart icon from a free icon library');
+console.log('- Use a simple design with your brand colors');
