@@ -5,7 +5,11 @@
 [![React](https://img.shields.io/badge/React-v18.x-blue)](https://reactjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://www.mongodb.com/)
 
-A comprehensive full-stack e-commerce platform built with the MERN stack, featuring advanced payment integration, admin dashboard, and responsive design.
+## 🌐 Live Demo
+
+Experience our e-commerce platform live: [https://e-shop-shop.onrender.com/](https://e-shop-shop.onrender.com/)
+
+Try out the full functionality including user authentication, product browsing, cart management, and checkout process.
 
 ## 🚀 Features
 
@@ -23,6 +27,7 @@ A comprehensive full-stack e-commerce platform built with the MERN stack, featur
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18**: Component-based UI library
 - **TypeScript**: Type-safe JavaScript development
 - **Tailwind CSS**: Utility-first CSS framework
@@ -33,6 +38,7 @@ A comprehensive full-stack e-commerce platform built with the MERN stack, featur
 - **Axios**: HTTP client for API requests
 
 ### Backend
+
 - **Node.js**: JavaScript runtime environment
 - **Express.js**: Web application framework
 - **MongoDB**: NoSQL database with Mongoose ODM
@@ -43,6 +49,7 @@ A comprehensive full-stack e-commerce platform built with the MERN stack, featur
 - **Puppeteer**: PDF generation for receipts
 
 ### Development Tools
+
 - **TypeScript**: Static type checking
 - **ESLint**: Code linting
 - **Concurrently**: Running multiple npm scripts
@@ -51,6 +58,7 @@ A comprehensive full-stack e-commerce platform built with the MERN stack, featur
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - **Node.js** (v16.x or higher)
 - **npm** or **yarn** package manager
 - **MongoDB** (local instance or MongoDB Atlas account)
@@ -87,6 +95,7 @@ cd ..
 Create `.env` files in both the `backend` and `frontend` directories:
 
 **Backend (.env in backend directory):**
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -105,6 +114,7 @@ FRONTEND_URL=http://localhost:3001
 ```
 
 **Frontend (.env in frontend directory):**
+
 ```env
 REACT_APP_API_URL=http://localhost:5000
 REACT_APP_STRIPE_PUBLIC_KEY=your_stripe_public_key
@@ -113,6 +123,7 @@ REACT_APP_STRIPE_PUBLIC_KEY=your_stripe_public_key
 ### 4. Run the Application
 
 **Option 1: Run both servers simultaneously (Recommended)**
+
 ```bash
 npm run dev
 ```
@@ -120,12 +131,14 @@ npm run dev
 **Option 2: Run servers separately**
 
 In one terminal (Backend):
+
 ```bash
 cd backend
 npm run dev
 ```
 
 In another terminal (Frontend):
+
 ```bash
 cd frontend
 npm run start
@@ -164,10 +177,12 @@ E-Commerce__C-2-C/
 This platform features an advanced payment system with TeleBirr integration for Ethiopian mobile payments:
 
 ### Supported Payment Methods
+
 - **TeleBirr**: Primary payment method for Ethiopian users
 - **Stripe**: Additional payment gateway (coming soon)
 
 ### Payment Flow
+
 1. User adds products to cart
 2. Proceeds to checkout with shipping information
 3. Selects payment method (TeleBirr)
@@ -203,6 +218,7 @@ The admin dashboard provides comprehensive control over the platform:
 ## 📧 Email Notifications
 
 Automated email system for:
+
 - Order confirmations
 - Payment confirmations
 - Shipping updates
@@ -211,12 +227,14 @@ Automated email system for:
 ## 📄 API Documentation
 
 ### Authentication Endpoints
+
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/me` - Get current user
 
 ### Product Endpoints
+
 - `GET /api/products` - Get all products
 - `GET /api/products/:id` - Get specific product
 - `POST /api/products` - Create new product (admin only)
@@ -224,6 +242,7 @@ Automated email system for:
 - `DELETE /api/products/:id` - Delete product (admin only)
 
 ### Cart Endpoints
+
 - `GET /api/cart` - Get user's cart
 - `POST /api/cart` - Add to cart
 - `PUT /api/cart` - Update cart item
@@ -231,6 +250,7 @@ Automated email system for:
 - `DELETE /api/cart` - Clear cart
 
 ### Order Endpoints
+
 - `POST /api/orders` - Create order
 - `GET /api/orders/myorders` - Get user's orders
 - `GET /api/orders/:id` - Get specific order
@@ -239,6 +259,7 @@ Automated email system for:
 ## 🧪 Testing
 
 Run tests for the frontend:
+
 ```bash
 cd frontend
 npm test
@@ -247,11 +268,13 @@ npm test
 ## 🚀 Deployment
 
 ### Backend Deployment
+
 1. Set up MongoDB Atlas or your preferred database
 2. Configure environment variables
 3. Deploy to platforms like Heroku, Railway, or AWS
 
 ### Frontend Deployment
+
 1. Build the production version: `npm run build`
 2. Deploy to platforms like Netlify, Vercel, or GitHub Pages
 3. Configure environment variables
@@ -286,7 +309,7 @@ For support, please contact the project maintainers or open an issue in the repo
 
 <div align="center">
 
-**Made with ❤️ by the C-2-C E-Commerce Team**
+**Made by Dawit Solomon**
 
 [Back to Top](#c-2-c-e-commerce-platform)
 
