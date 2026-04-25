@@ -57,13 +57,13 @@ const Header: React.FC = () => {
     { name: 'Home', path: '/' },
     { name: 'Products', path: '/products' },
     { name: 'Electronics', path: '/products?category=electronics' },
-    { name: 'Fashion', path: '/products?category=fashion' },
-    { name: 'Home & Kitchen', path: '/products?category=home' },
+    { name: 'Clothing', path: '/products?category=clothing' },
+    { name: 'Home & Garden', path: '/products?category=home' },
   ];
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2 px-4' : 'py-0'}`}>
-      <div className={`mx-auto max-w-7xl transition-all duration-500 ${isScrolled ? 'glass-card rounded-2xl' : 'bg-white shadow-sm'}`}>
+    <header className={`sticky top-0 z-50 transition-all w-full duration-500 ${isScrolled ? 'py-2 px-4' : 'bg-white shadow-sm py-0'}`}>
+      <div className={`mx-auto transition-all duration-500 ${isScrolled ? 'max-w-7xl glass-card rounded-2xl' : 'w-full'}`}>
         {/* Top bar (Hidden when scrolled for a cleaner look) */}
         {!isScrolled && (
           <div className="bg-surface-900 text-white/80 text-[10px] sm:text-xs py-1.5 px-4 rounded-t-lg hidden md:block transition-all duration-300">

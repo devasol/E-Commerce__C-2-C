@@ -47,16 +47,16 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-50 flex p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-surface-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       
       {/* Decorative background blobs for mobile/desktop harmony */}
       <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-primary-200/40 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-accent-200/30 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-      <div className="max-w-6xl w-full mx-auto bg-white/60 backdrop-blur-3xl rounded-[3rem] shadow-premium border border-white/50 overflow-hidden flex relative z-10">
+      <div className="max-w-5xl w-full mx-auto bg-white/60 backdrop-blur-3xl rounded-[2.5rem] shadow-premium border border-white/50 overflow-hidden flex relative z-10">
         
         {/* Left Panel — Rich Branding */}
-        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col justify-between p-16 text-white shrink-0">
+        <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col justify-between p-10 lg:p-12 text-white shrink-0">
           <div className="absolute inset-0 bg-primary-900 pointer-events-none z-0">
             <img src="https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&q=80" alt="Premium furniture" className="w-full h-full object-cover mix-blend-overlay opacity-30" />
             <div className="absolute inset-0 bg-gradient-to-t from-primary-900/90 via-primary-900/40 to-transparent" />
@@ -95,7 +95,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Right Panel — Form Area */}
-        <div className="w-full lg:w-[55%] flex items-center justify-center p-8 sm:p-12 lg:p-20 bg-white/40">
+        <div className="w-full lg:w-[55%] flex items-center justify-center p-8 sm:p-10 lg:p-14 bg-white/40">
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="w-full max-w-md">
             
             {/* Mobile Header elements */}

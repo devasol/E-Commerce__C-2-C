@@ -68,7 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Content */}
       <div className="px-2 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-2 gap-4">
-          <p className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">{product.category}</p>
+          <p className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">{product.category?.name || 'Category'}</p>
           <div className="flex items-center gap-1 text-yellow-400">
             <FaStar className="text-xs" />
             <span className="text-xs font-bold text-surface-400">{product.ratings?.average || '0.0'}</span>

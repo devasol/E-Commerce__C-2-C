@@ -50,28 +50,30 @@ const ProductList: React.FC = () => {
 
   useEffect(() => {
     const searchFromUrl = searchParams.get('search') || '';
+    const categoryFromUrl = searchParams.get('category') || 'all';
+    
     if (searchFromUrl !== searchTerm) setSearchTerm(searchFromUrl);
-    fetchProducts(currentPage);
-  }, [searchParams, currentPage, category, priceRange, sortBy]);
+    if (categoryFromUrl !== category) setCategory(categoryFromUrl);
+  }, [searchParams, searchTerm, category]);
 
   useEffect(() => {
-    setCurrentPage(1);
+    fetchProducts(currentPage);
+  }, [currentPage, searchTerm, category, priceRange, sortBy]);
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   }, [searchTerm, category, priceRange, sortBy]);
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
-    setSearchParams(params);
-  }, [searchTerm]);
+    if (category !== 'all') params.set('category', category);
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, category]);
 
-  if (loading && products.length === 0) {
-    return (
-      <div className="flex flex-col justify-center items-center h-[60vh] gap-4">
-        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
-        <p className="text-surface-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading Collections</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-surface-50 pt-10 pb-20">
@@ -230,9 +232,22 @@ const ProductList: React.FC = () => {
         </div>
 
         {/* Products Grid */}
-        {products.length === 0 ? (
-          <div className="py-20 text-center">
-            <div className="w-20 h-20 bg-surface-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-surface-300 text-4xl">
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white rounded-[2.5rem] p-4 shadow-premium border border-surface-100 flex flex-col h-full min-h-[400px]">
+                <div className="w-full aspect-[4/5] rounded-[2rem] skeleton mb-6" />
+                <div className="px-2 space-y-4">
+                  <div className="w-1/3 h-3 skeleton rounded-full" />
+                  <div className="w-3/4 h-5 skeleton rounded-xl" />
+                  <div className="w-1/2 h-8 skeleton rounded-xl mt-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="py-20 text-center flex flex-col items-center">
+            <div className="w-20 h-20 bg-surface-100 rounded-[2rem] flex items-center justify-center mb-6 text-surface-300 text-4xl">
                <MdSearch />
             </div>
             <h3 className="text-2xl font-bold text-surface-900 mb-2">No matches found</h3>

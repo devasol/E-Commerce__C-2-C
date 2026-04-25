@@ -44,9 +44,17 @@ exports.getAllProducts = async (req, res, next) => {
 
     // Add category filter if provided
     if (req.query.category) {
-      conditions.push({
-        category: { $regex: req.query.category, $options: 'i' }
-      });
+      const Category = require('../models/Category');
+      const categories = await Category.find({ name: { $regex: req.query.category, $options: 'i' } });
+      
+      if (categories.length > 0) {
+        conditions.push({
+          category: { $in: categories.map(c => c._id) }
+        });
+      } else {
+        // Force no results if category name doesn't match anything
+        conditions.push({ _id: null });
+      }
     }
 
     // Add price range filter if provided
