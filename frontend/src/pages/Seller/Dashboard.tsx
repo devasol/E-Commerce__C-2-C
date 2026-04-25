@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { productAPI, orderAPI } from '../../services/api';
+import { productAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { FaShoppingCart, FaDollarSign, FaBox, FaChartBar, FaChartLine, FaUserTie } from 'react-icons/fa';
 

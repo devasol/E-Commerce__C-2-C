@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { orderAPI, accountAPI } from '../services/api';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
-import { FaBox, FaArrowRight, FaCreditCard, FaMoneyBillWave, FaTruck, FaShoppingBag, FaCheckCircle } from 'react-icons/fa';
+import { FaBox, FaArrowRight, FaCreditCard, FaMoneyBillWave, FaShoppingBag, FaCheckCircle } from 'react-icons/fa';
 
 const OrderHistory: React.FC = () => {
   const { state: authState } = useAuth();

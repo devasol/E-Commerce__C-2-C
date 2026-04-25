@@ -50,7 +50,7 @@ const SellerOrders: React.FC = () => {
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
       // Call the API to update the order status
-      const response = await api.put(`/orders/${orderId}/seller-update`, { status: newStatus });
+      await api.put(`/orders/${orderId}/seller-update`, { status: newStatus });
 
       // Update the order in the local state
       setOrders(prevOrders =>
@@ -116,7 +116,6 @@ const SellerOrders: React.FC = () => {
               </tr>
             ) : (
               filteredOrders.map((order, index) => (
-                console.log(order.status),
                 <motion.tr 
                   key={order._id}
                   initial={{ opacity: 0, y: 20 }}

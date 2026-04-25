@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaStar, FaShoppingCart, FaRegHeart } from 'react-icons/fa';
-import { FiArrowRight, FiPackage } from 'react-icons/fi';
+import { FiArrowRight } from 'react-icons/fi';
 import ImageWithFallback from './ImageWithFallback';
 
 interface ProductCardProps {

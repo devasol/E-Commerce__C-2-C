@@ -39,7 +39,7 @@ const ForgotPassword: React.FC = () => {
     }
 
     try {
-      const response = await forgotPasswordOTP(email);
+      await forgotPasswordOTP(email);
       setSuccess('OTP sent to your email. Please check your inbox.');
       setStep('verify');
       setCountdown(300); // 5 minutes countdown
@@ -68,7 +68,7 @@ const ForgotPassword: React.FC = () => {
     setSuccess('');
 
     try {
-      const response = await forgotPasswordOTP(email);
+      await forgotPasswordOTP(email);
       setSuccess('New OTP sent to your email. Please check your inbox.');
       setCountdown(300); // Reset to 5 minutes
       startCountdown(300);
@@ -101,7 +101,7 @@ const ForgotPassword: React.FC = () => {
     }
 
     try {
-      const response = await verifyOTP(email, cleanOTP);
+      await verifyOTP(email, cleanOTP);
       setSuccess('OTP verified successfully!');
       setStep('reset');
     } catch (err: any) {
@@ -133,7 +133,7 @@ const ForgotPassword: React.FC = () => {
     const cleanOTP = otp.replace('-', '');
 
     try {
-      const response = await resetPasswordWithOTP(email, cleanOTP, newPassword);
+      await resetPasswordWithOTP(email, cleanOTP, newPassword);
       setSuccess('Password reset successfully! You can now log in with your new password.');
       setTimeout(() => {
         navigate('/login');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { orderAPI } from '../services/api';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';

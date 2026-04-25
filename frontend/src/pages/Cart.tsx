@@ -96,6 +96,7 @@ const Cart: React.FC = () => {
   const total = cartState.totalPrice + shipping + tax;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadCart();
     document.title = 'Shopping Cart — E-Shop';
   }, []);

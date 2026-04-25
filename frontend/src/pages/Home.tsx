@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { FaShoppingBag, FaTag, FaTruck, FaHeadset, FaShieldAlt, FaGift, FaStar } from 'react-icons/fa';
+import { FaStar } from 'react-icons/fa';
 import { FiArrowRight, FiPackage, FiShoppingBag, FiTruck, FiShield, FiPhoneCall } from 'react-icons/fi';
 
 const Home: React.FC = () => {

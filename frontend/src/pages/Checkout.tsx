@@ -23,12 +23,12 @@ const Checkout: React.FC = () => {
   const [errors, setErrors] = useState<any>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
-  const [downloadingReceipt, setDownloadingReceipt] = useState(false);
+
 
   const [telebirrStep, setTelebirrStep] = useState<'form' | 'initiated' | 'verifying' | 'verified'>('form');
   const [telebirrSession, setTelebirrSession] = useState<any>(null);
   const [telebirrPin, setTelebirrPin] = useState('');
-  const [telebirrPhoneNumber, setTelebirrPhoneNumber] = useState('');
+  const [telebirrPhoneNumber] = useState('');
   const [telebirrBalance] = useState<number>(1000); 
   const [countdown, setCountdown] = useState<number>(300);
 
@@ -153,7 +153,6 @@ const Checkout: React.FC = () => {
         let fullUrl = null;
         if (vRes.data.data.downloadReceiptUrl) {
           try {
-            setDownloadingReceipt(true);
             const base = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
             fullUrl = `${base}${vRes.data.data.downloadReceiptUrl}`;
             const res = await axios.get(fullUrl, { responseType: 'blob' });
@@ -161,7 +160,7 @@ const Checkout: React.FC = () => {
             const link = document.createElement('a');
             link.href = url; link.setAttribute('download', `receipt-${vRes.data.data.orderId}.pdf`);
             document.body.appendChild(link); link.click(); link.remove();
-          } catch (e) {} finally { setDownloadingReceipt(false); }
+          } catch (e) {}
         }
         await clearCart();
         setOrderSuccess({ orderId: vRes.data.data.orderId, message: 'Payment successful! Order confirmed.' });

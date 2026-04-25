@@ -17,6 +17,7 @@ const SalesReport: React.FC = () => {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchSalesReport();
   }, [dateRange]);
 
@@ -66,7 +67,6 @@ const SalesReport: React.FC = () => {
   }));
 
   // Colors for charts
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   // Animation variants
   const containerVariants = {

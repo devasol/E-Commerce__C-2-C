@@ -2,6 +2,8 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+
+
 // Connect to database
 const connectDB = require('./config/database');
 connectDB();

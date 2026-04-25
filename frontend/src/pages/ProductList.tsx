@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdFilterList, MdTune, MdKeyboardArrowLeft, MdKeyboardArrowRight, MdExpandMore, MdExpandLess, MdCheck, MdSearch, MdClose } from 'react-icons/md';
+import { MdTune, MdKeyboardArrowLeft, MdKeyboardArrowRight, MdExpandMore, MdCheck, MdSearch, MdClose } from 'react-icons/md';
 import ProductCard from '../components/ProductCard';
 import { productAPI } from '../services/api';
 
@@ -57,11 +57,13 @@ const ProductList: React.FC = () => {
   }, [searchParams, searchTerm, category]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchProducts(currentPage);
   }, [currentPage, searchTerm, category, priceRange, sortBy]);
 
   useEffect(() => {
     if (currentPage !== 1) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setCurrentPage(1);
     }
   }, [searchTerm, category, priceRange, sortBy]);
@@ -71,6 +73,7 @@ const ProductList: React.FC = () => {
     if (searchTerm) params.set('search', searchTerm);
     if (category !== 'all') params.set('category', category);
     setSearchParams(params, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, category]);
 
 

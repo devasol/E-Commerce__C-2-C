@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrash, FaShoppingCart, FaHeart, FaArrowRight } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
@@ -8,7 +8,6 @@ import ImageWithFallback from '../components/ImageWithFallback';
 
 const Wishlist: React.FC = () => {
   const { addToCart } = useCart();
-  const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
