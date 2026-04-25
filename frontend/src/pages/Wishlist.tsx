@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaTrash, FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaTrash, FaShoppingCart, FaHeart, FaArrowRight } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
@@ -65,88 +65,101 @@ const Wishlist: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center h-[60vh] gap-4">
+        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        <p className="text-surface-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading Wishlist</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Your Wishlist</h1>
+    <div className="min-h-screen bg-surface-50 pt-10 pb-20">
+      <div className="container mx-auto px-6">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+          <h1 className="text-5xl font-display font-bold text-surface-900">
+            Your <span className="text-gradient">Wishlist</span>
+          </h1>
+          <p className="text-surface-500 mt-2 text-lg">{wishlistItems.length} item{wishlistItems.length !== 1 ? 's' : ''} saved for later</p>
+        </motion.div>
 
-      {wishlistItems.length === 0 ? (
-        <div className="text-center py-12">
-          <FaHeart className="text-5xl text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold mb-4">Your wishlist is empty</h2>
-          <p className="text-gray-600 mb-6">Looks like you haven't added anything to your wishlist yet</p>
-          <Link
-            to="/products"
-            className="btn-primary inline-block"
+        {wishlistItems.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-24 glass-card rounded-[3rem]"
           >
-            Start Shopping
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistItems.map((item: any, index: number) => (
-            <motion.div
-              key={item.product._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden flex"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="w-1/3">
-                <ImageWithFallback
-                  src={typeof item.product === 'object' && item.product.images && item.product.images.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/200x200'}
-                  alt={typeof item.product === 'object' ? item.product.name : 'Product Image'}
-                  className="w-full h-full object-contain p-2"
-                />
-              </div>
-              
-              <div className="w-2/3 p-4 flex flex-col">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{typeof item.product === 'object' ? item.product.name : 'Product Name'}</h3>
-                
-                <div className="text-xl font-bold text-blue-600 mb-2">
-                  ${typeof item.product === 'object' ? (item.product.price?.toFixed(2) || '0.00') : '0.00'}
-                </div>
-                
-                <div className="mt-auto flex space-x-2">
-                  <button
-                    onClick={() => handleAddToCart(item.product)}
-                    className="flex-1 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
-                    disabled={loadingItems[item.product._id]}
-                  >
-                    {loadingItems[item.product._id] ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Adding...
-                      </>
-                    ) : (
-                      <>
-                        <FaShoppingCart className="mr-2" /> Add to Cart
-                      </>
-                    )}
-                  </button>
+            <div className="w-24 h-24 bg-red-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-red-300 text-5xl">
+              <FaHeart />
+            </div>
+            <h2 className="text-3xl font-bold text-surface-900 mb-3">Your wishlist is empty</h2>
+            <p className="text-surface-500 mb-10 text-lg max-w-sm mx-auto">Found something you like? Tap the heart icon to save it here for later.</p>
+            <Link to="/products" className="btn-premium-primary text-base !px-10 !py-4 inline-flex">
+              Discover Products <FaArrowRight className="ml-2" />
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <AnimatePresence>
+              {wishlistItems.map((item: any, index: number) => {
+                const product = typeof item.product === 'object' ? item.product : {};
+                const productId = product._id;
+                const isItemLoading = loadingItems[productId];
 
-                  <button
-                    onClick={() => removeFromWishlist(item.product._id)}
-                    className="flex items-center justify-center w-10 h-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-md"
-                    title="Remove from wishlist"
-                    disabled={loadingItems[item.product._id]}
+                return (
+                  <motion.div
+                    key={productId}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="premium-card group flex flex-col"
                   >
-                    {loadingItems[item.product._id] ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                    ) : (
-                      <FaTrash />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+                    <div className="relative aspect-square bg-surface-100 p-6 overflow-hidden rounded-t-2xl">
+                      <ImageWithFallback
+                        src={product.images?.[0] || 'https://via.placeholder.com/400'}
+                        alt={product.name || 'Product'}
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <button
+                        onClick={() => removeFromWishlist(productId)}
+                        disabled={isItemLoading}
+                        className="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors"
+                        title="Remove from wishlist"
+                      >
+                        {isItemLoading ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <FaTrash />}
+                      </button>
+                    </div>
+
+                    <div className="p-6 flex flex-col flex-grow">
+                      <h3 className="font-bold text-surface-900 text-lg mb-2 line-clamp-2 min-h-[3.5rem]">
+                        {product.name || 'Unknown Product'}
+                      </h3>
+                      <div className="text-2xl font-extrabold text-primary-600 mb-6">
+                        ${(product.price || 0).toFixed(2)}
+                      </div>
+
+                      <div className="mt-auto">
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          disabled={isItemLoading}
+                          className="w-full btn-premium-primary !py-3"
+                        >
+                          {isItemLoading ? (
+                            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" /> Working...</>
+                          ) : (
+                            <><FaShoppingCart className="mr-2" /> Add to Cart</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

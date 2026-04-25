@@ -1,31 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { MdStar, MdStarBorder, MdStarHalf, MdShoppingCart, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaStar, FaStarHalfAlt, FaRegStar, FaShoppingCart, FaHeart, FaRegHeart, FaArrowLeft, FaShieldAlt, FaTruck, FaUndo, FaMinus, FaPlus } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { productAPI, wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
-
-// Mock data for a product
-const mockProduct = {
-  _id: '1',
-  name: 'Wireless Bluetooth Headphones',
-  description: 'Experience premium sound quality with these wireless Bluetooth headphones. Featuring noise cancellation, long battery life, and comfortable over-ear design for extended listening sessions.',
-  price: 99.99,
-  images: [
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600',
-    'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600',
-    'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=600',
-    'https://images.unsplash.com/photo-1546813788-4a1a2f7c9f87?auto=format&fit=crop&w=600'
-  ],
-  ratings: { average: 4.5, count: 120 },
-  discount: 10,
-  stock: 25,
-  brand: 'AudioTech',
-  category: { name: 'Electronics' },
-  subcategory: 'Headphones',
-  tags: ['wireless', 'bluetooth', 'noise-cancelling', 'premium']
-};
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,54 +17,39 @@ const ProductDetail: React.FC = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        // Try to fetch from API first
         const response = await productAPI.getById(id!);
         const data = response.data.data;
         setProduct(data);
-        document.title = `${data.name} - E-Shop`;
-
-        // Check if product is in wishlist
+        document.title = `${data.name} — E-Shop`;
         try {
           const wishlistRes = await wishlistAPI.get();
-          const isInWishlist = wishlistRes.data.data.items.some(
-            (item: any) => item.product === id
-          );
-          setIsWishlisted(isInWishlist);
-        } catch (err) {
-          // If user is not authenticated or wishlist doesn't exist, just continue
-          setIsWishlisted(false);
-        }
+          setIsWishlisted(wishlistRes.data.data.items.some((item: any) => item.product === id));
+        } catch { setIsWishlisted(false); }
       } catch (error) {
-        console.error('Error fetching product from API:', error);
-        // Fallback to mock data if API fails
-        setProduct(mockProduct);
-        document.title = `${mockProduct.name} - E-Shop`;
+        console.error('Error fetching product:', error);
+        setProduct(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
 
   const handleAddToCart = async () => {
+    if (!product) return;
     setCartLoading(true);
     try {
-      if (product) {
-        await addToCart(product._id, quantity);
-        // Optionally show a success message here
-        alert(`${product.name} added to cart successfully!`);
-        navigate('/cart');
-      }
+      await addToCart(product._id, quantity);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2500);
     } catch (error: any) {
-      console.error('Error adding to cart:', error);
-      // Show error message to user
-      alert(error?.message || 'Failed to add item to cart. Please try again.');
+      alert(error?.message || 'Failed to add item to cart.');
     } finally {
       setCartLoading(false);
     }
@@ -94,281 +58,250 @@ const ProductDetail: React.FC = () => {
   const toggleWishlist = async () => {
     if (!product) return;
     setWishlistLoading(true);
-
     try {
       if (isWishlisted) {
-        // Remove from wishlist
         await wishlistAPI.removeFromWishlist(product._id);
         setIsWishlisted(false);
-        alert('Removed from wishlist!');
       } else {
-        // Add to wishlist
         await wishlistAPI.addToWishlist(product._id);
         setIsWishlisted(true);
-        alert('Added to wishlist!');
       }
     } catch (error: any) {
-      console.error('Error updating wishlist:', error);
-      alert(error?.message || 'Failed to update wishlist. Please try again.');
+      alert(error?.message || 'Failed to update wishlist.');
     } finally {
       setWishlistLoading(false);
     }
   };
 
-  const renderRating = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<MdStar key={i} className="text-yellow-400" />);
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(<MdStarHalf key={i} className="text-yellow-400" />);
-      } else {
-        stars.push(<MdStarBorder key={i} className="text-yellow-400" />);
-      }
-    }
-
-    return <div className="flex">{stars}</div>;
+  const renderStars = (rating: number) => {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    return Array.from({ length: 5 }, (_, i) => {
+      if (i < full) return <FaStar key={i} className="text-yellow-400" />;
+      if (i === full && half) return <FaStarHalfAlt key={i} className="text-yellow-400" />;
+      return <FaRegStar key={i} className="text-yellow-300" />;
+    });
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center h-[60vh] gap-4">
+        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        <p className="text-surface-400 font-bold animate-pulse uppercase tracking-widest text-xs">Loading Product</p>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h2 className="text-2xl font-bold">Product not found</h2>
-        <button 
-          onClick={() => navigate('/products')}
-          className="btn-primary mt-4"
-        >
-          Back to Products
-        </button>
+      <div className="min-h-screen bg-surface-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-surface-900 mb-4">Product not found</h2>
+          <button onClick={() => navigate('/products')} className="btn-premium-primary">Back to Products</button>
+        </div>
       </div>
     );
   }
 
+  const discountPrice = product.discount > 0 ? (product.price * (1 - product.discount / 100)).toFixed(2) : null;
+  const categoryName = typeof product.category === 'object' ? product.category.name : (product.category || 'Category');
+
+  const guarantees = [
+    { icon: <FaTruck />, title: 'Free Delivery', sub: 'On orders over $100' },
+    { icon: <FaUndo />, title: '30-Day Returns', sub: 'Hassle-free returns' },
+    { icon: <FaShieldAlt />, title: 'Secure Payment', sub: '100% protected' },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <motion.div 
-        className="bg-white rounded-lg shadow-md overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-          {/* Product Images */}
-          <div>
-            <div className="mb-4">
-              <ImageWithFallback
-                src={product.images[selectedImage]}
-                alt={product.name}
-                className="w-full h-96 object-contain rounded-lg"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 gap-2">
-              {product.images.map((img: string, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`border rounded-lg overflow-hidden transition-all duration-200 ${
-                    selectedImage === index
-                      ? 'border-blue-500 border-2 ring-2 ring-blue-300 scale-105'
-                      : 'border-gray-300 hover:border-blue-400'
-                  }`}
-                  aria-label={`View image ${index + 1} of ${product.name}`}
+    <div className="min-h-screen bg-surface-50 py-10">
+      <div className="container mx-auto px-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-surface-400 mb-10">
+          <Link to="/products" className="flex items-center gap-1.5 hover:text-primary-600 transition-colors font-medium">
+            <FaArrowLeft className="text-xs" /> Products
+          </Link>
+          <span>/</span>
+          <span className="text-surface-500">{categoryName}</span>
+          <span>/</span>
+          <span className="text-surface-900 font-semibold truncate max-w-xs">{product.name}</span>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-16"
+        >
+          {/* ── Image Column ── */}
+          <div className="space-y-4">
+            {/* Main Image */}
+            <div className="relative aspect-square rounded-[3rem] overflow-hidden bg-surface-100 shadow-premium">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedImage}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0"
                 >
                   <ImageWithFallback
-                    src={img}
-                    alt={`${product.name} thumbnail ${index + 1}`}
-                    className="w-full h-20 object-cover"
+                    src={product.images[selectedImage]}
+                    alt={product.name}
+                    className="w-full h-full object-contain"
                   />
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Product Info */}
-          <div>
-            <div className="mb-4">
-              <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                {typeof product.category === 'object' ? product.category.name : (typeof product.category === 'string' ? product.category : 'Category')}
-              </span>
-              {product.subcategory && (
-                <span className="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded ml-2">
-                  {product.subcategory}
-                </span>
-              )}
-            </div>
-            
-            <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-            
-            <div className="flex items-center mb-4">
-              {renderRating(product.ratings.average)}
-              <span className="text-gray-600 ml-2">({product.ratings.count} reviews)</span>
-            </div>
-            
-            <div className="flex items-center mb-6">
-              {product.discount > 0 ? (
-                <div className="flex items-center">
-                  <span className="text-3xl font-bold text-red-600">
-                    ${(product.price * (1 - product.discount / 100)).toFixed(2)}
-                  </span>
-                  <span className="text-gray-500 line-through ml-4 text-xl">
-                    ${product.price.toFixed(2)}
-                  </span>
-                  <span className="bg-red-100 text-red-800 text-sm font-semibold ml-4 px-2.5 py-0.5 rounded">
-                    {product.discount}% OFF
-                  </span>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Badges */}
+              {product.discount > 0 && (
+                <div className="absolute top-6 left-6 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full uppercase tracking-widest shadow">
+                  -{product.discount}%
                 </div>
-              ) : (
-                <span className="text-3xl font-bold">${product.price.toFixed(2)}</span>
+              )}
+              {product.stock === 0 && (
+                <div className="absolute inset-0 bg-surface-900/50 backdrop-blur-sm flex items-center justify-center">
+                  <span className="text-white font-bold text-2xl uppercase tracking-widest border-2 border-white/30 px-8 py-3 rounded-3xl">Out of Stock</span>
+                </div>
               )}
             </div>
-            
-            <p className="text-gray-700 mb-6">{product.description}</p>
-            
-            <div className="mb-6">
-              <h3 className="font-semibold text-lg mb-2">Features:</h3>
-              <ul className="list-disc pl-5 text-gray-600">
-                <li>Wireless Bluetooth 5.0 connectivity</li>
-                <li>Active noise cancellation technology</li>
-                <li>Up to 30 hours of battery life</li>
-                <li>Comfortable over-ear design</li>
-                <li>Built-in microphone for calls</li>
-              </ul>
-            </div>
-            
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <span className="font-semibold mr-4">Quantity:</span>
-                <div className="flex items-center border rounded">
-                  <button 
-                    className="px-3 py-1 text-xl"
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+
+            {/* Thumbnails */}
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {product.images.map((img: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    className={`aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                      selectedImage === i
+                        ? 'border-primary-500 ring-4 ring-primary-100 scale-105'
+                        : 'border-surface-200 hover:border-primary-300'
+                    }`}
                   >
-                    -
+                    <ImageWithFallback src={img} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
                   </button>
-                  <span className="px-4 py-1">{quantity}</span>
-                  <button 
-                    className="px-3 py-1 text-xl"
-                    onClick={() => setQuantity(q => q + 1)}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Info Column ── */}
+          <div className="flex flex-col gap-6">
+            {/* Category + Brand */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full uppercase tracking-widest">{categoryName}</span>
+              {product.brand && (
+                <span className="px-3 py-1 bg-surface-100 text-surface-600 text-xs font-bold rounded-full uppercase tracking-widest">{product.brand}</span>
+              )}
+            </div>
+
+            {/* Title */}
+            <h1 className="text-4xl font-display font-bold text-surface-900 leading-tight">{product.name}</h1>
+
+            {/* Rating */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 text-lg">{renderStars(product.ratings?.average || 0)}</div>
+              <span className="text-surface-500 font-medium">{product.ratings?.average?.toFixed(1)} · {product.ratings?.count} reviews</span>
+            </div>
+
+            {/* Price */}
+            <div className="flex items-end gap-4">
+              <span className="text-5xl font-extrabold text-primary-600">
+                ${discountPrice ?? product.price.toFixed(2)}
+              </span>
+              {discountPrice && (
+                <>
+                  <span className="text-2xl font-bold text-surface-300 line-through">${product.price.toFixed(2)}</span>
+                  <span className="px-3 py-1 bg-red-50 text-red-600 text-sm font-bold rounded-full">Save {product.discount}%</span>
+                </>
+              )}
+            </div>
+
+            {/* Description */}
+            <p className="text-surface-500 text-lg leading-relaxed">{product.description}</p>
+
+            {/* Stock */}
+            <div className="flex items-center gap-2">
+              <div className={`w-2.5 h-2.5 rounded-full ${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {product.stock > 0 ? `${product.stock} units in stock` : 'Out of stock'}
+              </span>
+            </div>
+
+            {/* Quantity + Actions */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-bold text-surface-600 uppercase tracking-widest">Quantity</span>
+                <div className="flex items-center gap-3 bg-surface-100 rounded-2xl p-1">
+                  <button
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    className="w-10 h-10 rounded-xl hover:bg-white hover:shadow flex items-center justify-center transition-all"
                   >
-                    +
+                    <FaMinus className="text-xs text-surface-600" />
+                  </button>
+                  <span className="w-8 text-center font-bold text-surface-900 text-lg">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(q => q + 1)}
+                    className="w-10 h-10 rounded-xl hover:bg-white hover:shadow flex items-center justify-center transition-all"
+                  >
+                    <FaPlus className="text-xs text-surface-600" />
                   </button>
                 </div>
               </div>
-              
-              <div className="flex space-x-4">
+
+              <div className="flex gap-4">
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0 || cartLoading}
-                  className={`flex items-center px-6 py-3 rounded-lg font-semibold ${
-                    product.stock === 0
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
+                  className={`btn-premium-primary flex-1 !py-4 text-base transition-all ${addedToCart ? '!bg-green-600' : ''}`}
                 >
                   {cartLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Adding...
-                    </>
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Adding…</>
+                  ) : addedToCart ? (
+                    <>✓ Added to Cart</>
                   ) : (
-                    <>
-                      <MdShoppingCart className="mr-2" />
-                      {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-                    </>
+                    <><FaShoppingCart />{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</>
                   )}
                 </button>
 
                 <button
                   onClick={toggleWishlist}
                   disabled={wishlistLoading}
-                  className={`flex items-center px-6 py-3 border rounded-lg font-semibold ${
+                  className={`w-16 h-16 rounded-2xl border-2 flex items-center justify-center text-xl transition-all duration-300 ${
                     isWishlisted
-                      ? 'bg-red-100 text-red-600 border-red-300'
-                      : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                      ? 'border-red-300 bg-red-50 text-red-500'
+                      : 'border-surface-200 bg-white text-surface-400 hover:border-red-300 hover:text-red-500'
                   }`}
                 >
-                  {wishlistLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-800 mr-2"></div> {isWishlisted ? 'Removing...' : 'Adding...'}
-                    </>
-                  ) : (
-                    <>
-                      {isWishlisted ? <MdFavorite className="mr-2" /> : <MdFavoriteBorder className="mr-2" />}
-                      {isWishlisted ? 'Wishlisted' : 'Wishlist'}
-                    </>
-                  )}
+                  {isWishlisted ? <FaHeart /> : <FaRegHeart />}
                 </button>
               </div>
             </div>
-            
-            <div className="border-t pt-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-gray-600">Availability: </span>
-                  <span className={product.stock > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                  </span>
+
+            {/* Guarantees */}
+            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-surface-100">
+              {guarantees.map((g, i) => (
+                <div key={i} className="text-center p-3 rounded-2xl bg-surface-50 border border-surface-100">
+                  <span className="text-primary-500 text-xl flex justify-center mb-2">{g.icon}</span>
+                  <p className="text-surface-900 font-bold text-xs">{g.title}</p>
+                  <p className="text-surface-400 text-[10px] mt-0.5">{g.sub}</p>
                 </div>
-                <div>
-                  <span className="text-gray-600">Brand: </span>
-                  <span className="font-semibold">{product.brand}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Category: </span>
-                  <span className="font-semibold">{typeof product.category === 'object' ? product.category.name : (typeof product.category === 'string' ? product.category : 'Category')}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">SKU: </span>
-                  <span className="font-semibold">WH-{product._id}</span>
-                </div>
-              </div>
+              ))}
             </div>
+
+            {/* Tags */}
+            {product.tags?.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {product.tags.map((tag: string, i: number) => (
+                  <span key={i} className="px-3 py-1 bg-surface-100 text-surface-500 text-xs font-medium rounded-full capitalize">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </motion.div>
-      
-      {/* Related Products */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500',
-            'https://images.unsplash.com/photo-1554982338-30eec5d015b7?auto=format&fit=crop&w=500',
-            'https://images.unsplash.com/photo-1593305841991-0173b693e8d4?auto=format&fit=crop&w=500',
-            'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=500'
-          ].map((img, index) => (
-            <motion.div
-              key={index}
-              className="bg-white rounded-lg shadow-md overflow-hidden product-card"
-              whileHover={{ y: -5 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                <ImageWithFallback src={img} alt={`Related product ${index + 1}`} className="h-full w-full object-contain" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold mb-2">Related Product {index + 1}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold">${(Math.random() * 100 + 50).toFixed(2)}</span>
-                  <button className="btn-primary text-sm">View</button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { orderAPI, accountAPI } from '../services/api';
+import { useParams, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { orderAPI } from '../services/api';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { FaArrowLeft, FaBox, FaMapMarkerAlt, FaCreditCard, FaCheckCircle, FaTruck, FaFileInvoiceDollar, FaTimesCircle } from 'react-icons/fa';
 
 const OrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { state: authState } = useAuth();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -19,282 +19,253 @@ const OrderDetails: React.FC = () => {
       try {
         const response = await orderAPI.getById(id!);
         setOrder(response.data.data);
-        setLoading(false);
-        document.title = `Order #${id} - E-Shop`;
       } catch (error) {
-        console.error('Error fetching order:', error);
-        setLoading(false);
         toast.error('Failed to load order details');
+      } finally {
+        setLoading(false);
+        if (id) document.title = `Order #${id.substring(id.length - 8)} — E-Shop`;
       }
     };
-
-    if (id) {
-      fetchOrder();
-    }
+    if (id) fetchOrder();
   }, [id]);
 
   const updateOrderStatus = async (newStatus: string) => {
     if (!order) return;
-
     setUpdatingStatus(true);
     try {
-      const response = await api.put(`/orders/${id}/seller-update`, { status: newStatus });
-
-      // Update the order in the local state
-      setOrder((prevOrder: any) => ({
-        ...prevOrder,
-        status: newStatus
-      }));
-
-      toast.success(`Order status updated to ${newStatus}`);
+      await api.put(`/orders/${id}/seller-update`, { status: newStatus });
+      setOrder((prev: any) => ({ ...prev, status: newStatus }));
+      toast.success(`Status updated to ${newStatus}`);
     } catch (error: any) {
-      console.error('Error updating order status:', error);
       toast.error(error.response?.data?.message || 'Failed to update order status');
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  // Check if the current user is a seller of any product in this order
   const isSellerOfOrder = () => {
-    if (!order || !authState.user || !authState.user._id) return false;
-
-    const userId = authState.user._id;
-
-    // Check if any of the products in the order belong to the current user
-    return order.orderItems.some((item: any) =>
-      item.product && item.product.seller &&
-      item.product.seller._id === userId
-    );
+    if (!order || !authState.user) return false;
+    return order.orderItems.some((item: any) => item.product?.seller?._id === authState.user?._id);
   };
-
 
   const markAsReceived = async () => {
     if (!order) return;
-
     try {
       await orderAPI.markAsReceived(id!);
-      // Update the order in the local state
-      setOrder((prevOrder: any) => ({
-        ...prevOrder,
-        isDelivered: true,
-        status: 'delivered',
-        deliveredAt: new Date().toISOString()
-      }));
-      toast.success('Order marked as received successfully!');
+      setOrder((prev: any) => ({ ...prev, isDelivered: true, status: 'delivered', deliveredAt: new Date().toISOString() }));
+      toast.success('Order marked as received!');
     } catch (error: any) {
-      console.error('Error marking order as received:', error);
-      toast.error(error.response?.data?.message || 'Failed to mark order as received');
+      toast.error(error.response?.data?.message || 'Failed to mark as received');
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'shipped': return 'bg-indigo-100 text-indigo-800';
-      case 'sent': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return { color: 'bg-yellow-50 text-yellow-600 border-yellow-200', text: 'Pending' };
+      case 'processing': return { color: 'bg-blue-50 text-blue-600 border-blue-200', text: 'Processing' };
+      case 'shipped': return { color: 'bg-indigo-50 text-indigo-600 border-indigo-200', text: 'Shipped' };
+      case 'sent': return { color: 'bg-purple-50 text-purple-600 border-purple-200', text: 'Sent' };
+      case 'delivered': return { color: 'bg-green-50 text-green-600 border-green-200', text: 'Delivered' };
+      case 'cancelled': return { color: 'bg-red-50 text-red-600 border-red-200', text: 'Cancelled' };
+      default: return { color: 'bg-surface-100 text-surface-600 border-surface-200', text: status };
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center h-[60vh] gap-4">
+        <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
+        <p className="text-surface-400 font-bold uppercase tracking-widest text-xs animate-pulse">Loading Order Details</p>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Order Not Found</h2>
-        <p className="text-gray-600 mb-6">The order you're looking for doesn't exist or you don't have permission to view it.</p>
-        <Link to="/order-history" className="btn-primary">
-          Back to Order History
-        </Link>
+      <div className="min-h-[60vh] flex flex-col justify-center items-center">
+        <div className="text-center p-12 glass-card rounded-[3rem]">
+          <h2 className="text-3xl font-display font-bold text-surface-900 mb-4">Order Not Found</h2>
+          <Link to="/order-history" className="btn-premium-primary"><FaArrowLeft className="mr-2" /> Back to History</Link>
+        </div>
       </div>
     );
   }
 
+  const status = getStatusInfo(order.status);
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Order Details</h1>
-        <Link to="/order-history" className="text-blue-600 hover:text-blue-800">
-          ← Back to Orders
-        </Link>
-      </div>
-
-      <motion.div
-        className="bg-white rounded-lg shadow-md p-6 mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-semibold">Order # {order._id}</h2>
-            <p className="text-gray-600">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
-          </div>
-
-          <div className="mt-4 md:mt-0">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-            </span>
-          </div>
+    <div className="min-h-screen bg-surface-50 pt-10 pb-20">
+      <div className="container mx-auto px-6 max-w-5xl">
+        <div className="flex items-center gap-4 mb-8">
+          <Link to="/order-history" className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-surface-500 hover:text-primary-600 transition-colors">
+            <FaArrowLeft />
+          </Link>
+          <h1 className="text-3xl font-display font-bold text-surface-900">Order Details</h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium">{order.shippingAddress.fullName}</p>
-              <p>{order.shippingAddress.address}</p>
-              <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
-              <p>{order.shippingAddress.country}</p>
-              {order.shippingAddress.phone && <p>Phone: {order.shippingAddress.phone}</p>}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium">
-                {order.paymentMethod === 'card' ? 'Credit/Debit Card' :
-                 order.paymentMethod === 'mobile banking' ? 'Mobile Banking' :
-                 order.paymentMethod === 'cash on delivery' ? 'Cash on Delivery' :
-                 order.paymentMethod === 'internal' ? 'Internal Account' :
-                 order.paymentMethod === 'telebirr' ? 'TeleBirr Payment' :
-                 order.paymentMethod}
-              </p>
-              <p className={`mt-1 ${order.isPaid ? 'text-green-600' : 'text-red-600'}`}>
-                {order.isPaid ? 'Paid' : 'Not Paid'}
-              </p>
-              {order.paidAt && (
-                <p className="text-sm text-gray-600">Paid on {new Date(order.paidAt).toLocaleDateString()}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h3 className="text-lg font-semibold mb-4">Order Items</h3>
-        <div className="space-y-4">
-          {order.orderItems.map((item: any, index: number) => (
-            <div key={index} className="flex items-center border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-              {item.image && (
-                <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden mr-4">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-contain"
-                  />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+          {/* Header Summary Card */}
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-premium border border-surface-100">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-surface-100">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-primary-600 bg-primary-50 p-2.5 rounded-xl text-xl"><FaBox /></span>
+                  <div>
+                    <h2 className="text-2xl font-bold text-surface-900 leading-none">Order #{order._id.substring(order._id.length - 8)}</h2>
+                    <p className="text-surface-400 font-mono text-xs mt-1">{order._id}</p>
+                  </div>
                 </div>
-              )}
-              <div className="flex-grow">
-                <h4 className="font-medium">{item.name}</h4>
-                <p className="text-gray-600">Quantity: {item.quantity}</p>
+                <p className="text-surface-500 text-sm font-medium pl-14 mt-2">
+                  Placed on {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </p>
               </div>
-              <div className="text-right">
-                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
+
+              <div className="flex flex-col md:items-end gap-3 pl-14 md:pl-0">
+                <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${status.color}`}>
+                  {status.text}
+                </span>
+                <p className="text-4xl font-extrabold text-primary-600">${order.totalPrice.toFixed(2)}</p>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Items Subtotal</span>
-            <span>${order.itemsPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax</span>
-            <span>${order.taxPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Shipping</span>
-            <span>${order.shippingPrice.toFixed(2)}</span>
-          </div>
-          <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-lg">
-            <span>Total</span>
-            <span>${order.totalPrice.toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+              {/* Shipping */}
+              <div className="flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0"><FaMapMarkerAlt /></div>
+                <div>
+                  <h3 className="text-xs font-bold text-surface-400 uppercase tracking-widest mb-2">Shipping Information</h3>
+                  <div className="space-y-1 text-sm font-medium text-surface-900">
+                    <p className="font-bold text-base">{order.shippingAddress.fullName}</p>
+                    <p>{order.shippingAddress.address}</p>
+                    <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                    <p>{order.shippingAddress.country}</p>
+                    {order.shippingAddress.phone && <p className="text-surface-500 mt-2">📞 {order.shippingAddress.phone}</p>}
+                  </div>
+                </div>
+              </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Order Status</h3>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-gray-700">
-              Current Status: <span className={`px-2 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-              </span>
-            </p>
-            {order.deliveredAt && (
-              <p className="text-sm text-gray-600 mt-1">
-                Delivered on {new Date(order.deliveredAt).toLocaleDateString()}
-              </p>
-            )}
+              {/* Payment */}
+              <div className="flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center shrink-0"><FaCreditCard /></div>
+                <div>
+                  <h3 className="text-xs font-bold text-surface-400 uppercase tracking-widest mb-2">Payment Details</h3>
+                  <div className="space-y-2 text-sm font-medium text-surface-900">
+                    <p className="capitalize text-base font-bold">{order.paymentMethod === 'telebirr' ? 'TeleBirr' : order.paymentMethod}</p>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${order.isPaid ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+                      {order.isPaid ? <FaCheckCircle /> : <FaTimesCircle />} {order.isPaid ? 'Payment Confirmed' : 'Payment Pending'}
+                    </div>
+                    {order.paidAt && <p className="text-surface-500 text-xs">on {new Date(order.paidAt).toLocaleDateString()}</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          {/* Items & Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 bg-white rounded-[2.5rem] shadow-premium border border-surface-100 overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-surface-100 bg-surface-50">
+                <h3 className="text-lg font-bold text-surface-900">Order Items ({order.orderItems.length})</h3>
+              </div>
+              <div className="p-6 space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar flex-grow">
+                {order.orderItems.map((item: any, i: number) => (
+                  <div key={i} className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl border border-surface-100 hover:border-primary-200 transition-colors">
+                    <div className="w-20 h-20 bg-surface-50 rounded-xl overflow-hidden shrink-0 border border-surface-100">
+                      <img src={item.image || 'https://via.placeholder.com/200'} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                    </div>
+                    <div className="flex flex-col justify-center flex-grow">
+                      <h4 className="font-bold text-surface-900">{item.name}</h4>
+                      <p className="text-surface-500 text-sm mt-1">Quantity: <span className="font-bold text-surface-700">{item.quantity}</span></p>
+                    </div>
+                    <div className="flex flex-col items-start sm:items-end justify-center pt-2 sm:pt-0 border-t sm:border-0 border-surface-100 mt-2 sm:mt-0">
+                      <p className="text-lg font-bold text-primary-600">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-xs text-surface-400 font-medium">${item.price.toFixed(2)} each</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            {/* Show "Received" button only for buyers with shipped/sent orders that haven't been delivered yet */}
-            {!order.isDelivered && (order.status === 'shipped' || order.status === 'sent') && (
-              <button
-                onClick={markAsReceived}
-                disabled={updatingStatus}
-                className={`px-4 py-2 rounded-lg ${
-                  updatingStatus
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
-                }`}
-              >
-                {updatingStatus ? 'Processing...' : 'Mark as Received'}
-              </button>
-            )}
+            <div className="space-y-8">
+              {/* Cost Summary */}
+              <div className="bg-white rounded-[2.5rem] p-8 shadow-premium border border-surface-100">
+                <div className="flex items-center gap-2 mb-6">
+                  <FaFileInvoiceDollar className="text-primary-500 text-xl" />
+                  <h3 className="text-lg font-bold text-surface-900">Summary</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between text-surface-500 font-medium">
+                    <span>Subtotal</span>
+                    <span className="text-surface-900">${order.itemsPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-surface-500 font-medium">
+                    <span>Tax</span>
+                    <span className="text-surface-900">${order.taxPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-surface-500 font-medium">
+                    <span>Shipping</span>
+                    <span className="text-surface-900">${order.shippingPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-surface-100 pt-4 flex justify-between font-bold text-2xl">
+                    <span className="text-surface-900">Total</span>
+                    <span className="text-primary-600">${order.totalPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Show status update buttons for sellers */}
-            {isSellerOfOrder() && (
-              <>
-                {/* Show status update dropdown for sellers */}
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      updateOrderStatus(e.target.value);
-                      e.target.value = ""; // Reset the dropdown
-                    }
-                  }}
-                  disabled={updatingStatus}
-                  className={`px-4 py-2 rounded-lg ${
-                    updatingStatus
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                  }`}
-                >
-                  <option value="">Update Status...</option>
-                  {order.status === 'pending' && <option value="processing">Processing</option>}
-                  {order.status === 'pending' && <option value="cancelled">Cancelled</option>}
-                  {(order.status === 'pending' || order.status === 'processing') && <option value="shipped">Shipped</option>}
-                  {(order.status === 'shipped' || order.status === 'processing') && <option value="sent">Sent</option>}
-                  {(order.status === 'shipped' || order.status === 'sent' || order.status === 'processing') && <option value="delivered">Delivered</option>}
-                  {(order.status !== 'cancelled' && order.status !== 'delivered') && <option value="cancelled">Cancel Order</option>}
-                </select>
-              </>
-            )}
+              {/* Actions & Status */}
+              <div className="bg-white rounded-[2.5rem] p-8 shadow-premium border border-surface-100">
+                <div className="flex items-center gap-2 mb-6">
+                  <FaTruck className="text-primary-500 text-xl" />
+                  <h3 className="text-lg font-bold text-surface-900">Actions</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {!order.isDelivered && (order.status === 'shipped' || order.status === 'sent') && (
+                    <button onClick={markAsReceived} disabled={updatingStatus} className="btn-premium-primary w-full !py-3 !bg-green-500 hover:!bg-green-600 !shadow-none">
+                      {updatingStatus ? 'Processing...' : 'Mark as Received'}
+                    </button>
+                  )}
+
+                  {isSellerOfOrder() && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-surface-400 uppercase tracking-widest">Update Order Status</label>
+                      <select
+                        value=""
+                        onChange={(e) => { if (e.target.value) updateOrderStatus(e.target.value); }}
+                        disabled={updatingStatus}
+                        className="input-premium appearance-none !py-3 font-bold text-surface-600"
+                      >
+                        <option value="">Select New Status...</option>
+                        {order.status === 'pending' && <option value="processing">Processing</option>}
+                        {order.status === 'pending' && <option value="cancelled">Cancelled</option>}
+                        {(order.status === 'pending' || order.status === 'processing') && <option value="shipped">Shipped</option>}
+                        {(order.status === 'shipped' || order.status === 'processing') && <option value="sent">Sent</option>}
+                        {(order.status === 'shipped' || order.status === 'sent' || order.status === 'processing') && <option value="delivered">Delivered</option>}
+                        {(order.status !== 'cancelled' && order.status !== 'delivered') && <option value="cancelled">Cancel Order</option>}
+                      </select>
+                    </div>
+                  )}
+
+                  {!(!order.isDelivered && (order.status === 'shipped' || order.status === 'sent')) && !isSellerOfOrder() && order.status === 'delivered' && (
+                    <div className="p-4 bg-green-50 text-green-600 rounded-xl border border-green-100 text-sm font-bold text-center flex flex-col items-center gap-2">
+                      <FaCheckCircle className="text-2xl" />
+                      Order Complete
+                      {order.deliveredAt && <span className="font-normal text-xs text-green-600/80">Delivered {new Date(order.deliveredAt).toLocaleDateString()}</span>}
+                    </div>
+                  )}
+                  
+                  {!(!order.isDelivered && (order.status === 'shipped' || order.status === 'sent')) && !isSellerOfOrder() && order.status !== 'delivered' && (
+                    <div className="p-4 bg-surface-50 text-surface-500 rounded-xl border border-surface-100 text-sm font-bold text-center">
+                      No actions available for this order state.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

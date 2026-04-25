@@ -1,335 +1,209 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaEnvelope, FaLock, FaUserShield, FaSave, FaKey } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaUserShield, FaSave, FaKey, FaBoxOpen, FaHeart, FaWallet, FaCamera } from 'react-icons/fa';
 
 const Profile: React.FC = () => {
   const { state: authState, updateProfile, changePassword } = useAuth();
-  const [userData, setUserData] = useState({
-    name: authState.user?.name || '',
-    email: authState.user?.email || ''
-  });
-
-  const [roleData, setRoleData] = useState<{
-    role: 'customer' | 'seller';
-  }>({
-    role: (authState.user?.role === 'customer' || authState.user?.role === 'seller')
-      ? authState.user.role
-      : 'customer'
-  });
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
-  });
-
+  const [userData, setUserData] = useState({ name: '', email: '' });
+  const [roleData, setRoleData] = useState<'customer' | 'seller'>('customer');
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'general' | 'security'>('general');
 
   useEffect(() => {
     if (authState.user) {
-      setUserData({
-        name: authState.user.name || '',
-        email: authState.user.email || ''
-      });
-      setRoleData({
-        role: (authState.user.role === 'customer' || authState.user.role === 'seller')
-          ? authState.user.role
-          : 'customer'
-      });
+      setUserData({ name: authState.user.name || '', email: authState.user.email || '' });
+      setRoleData((authState.user.role === 'customer' || authState.user.role === 'seller') ? authState.user.role : 'customer');
     }
-    document.title = 'My Profile - E-Shop';
+    document.title = 'My Profile — E-Shop';
   }, [authState.user]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
-
+    setError(''); setSuccessMessage('');
     try {
-      await updateProfile(userData);
-      setSuccessMessage('Profile updated successfully!');
+      await updateProfile({ ...userData, role: roleData });
+      setSuccessMessage('Profile and role updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+      setError(err.response?.data?.message || err.message || 'Failed to update profile');
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
-
+    setError(''); setSuccessMessage('');
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
       setError('New passwords do not match');
       return;
     }
-
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
       setSuccessMessage('Password changed successfully!');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to change password');
     }
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-30"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent"></div>
-        <div className="container mx-auto px-4 py-16 relative z-10">
-          <div className="max-w-2xl">
-            <motion.h1
-              className="text-3xl md:text-4xl font-bold mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              My Profile
-            </motion.h1>
-            <motion.p
-              className="text-xl text-gray-200"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              Manage your account information and settings
-            </motion.p>
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-8">
-        <motion.div
-          className="max-w-5xl mx-auto"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Profile Info */}
-            <motion.div
-              className="lg:col-span-2 bg-white rounded-xl shadow-sm p-8"
-              variants={itemVariants}
-            >
-              <div className="flex items-center mb-6">
-                <FaUser className="text-blue-600 text-2xl mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Personal Information</h2>
+    <div className="min-h-screen bg-surface-50 pb-20">
+      {/* Premium Hero Profile Section */}
+      <div className="relative pt-32 pb-16 px-6 mesh-gradient overflow-hidden">
+        <div className="absolute inset-0 bg-primary-900/10 backdrop-blur-[100px]" />
+        
+        <div className="container mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row items-center md:items-end gap-6 text-center md:text-left">
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-[2rem] bg-white shadow-xl flex items-center justify-center border-4 border-white/50 overflow-hidden">
+                <span className="text-5xl font-bold text-primary-600">{userData.name.charAt(0).toUpperCase()}</span>
               </div>
-
-              {successMessage && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center" role="alert">
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  {successMessage}
-                </div>
-              )}
-
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center" role="alert">
-                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                setError('');
-                setSuccessMessage('');
-
-                try {
-                  // Combine profile data with role data
-                  const updateData = {
-                    ...userData,
-                    role: roleData.role
-                  };
-
-                  await updateProfile(updateData);
-
-                  setSuccessMessage('Profile and role updated successfully!');
-                } catch (err: any) {
-                  console.error('Update error:', err);
-                  setError(err.response?.data?.message || err.message || 'Failed to update profile');
-                }
-              }}>
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaUser className="mr-2 text-gray-500" />
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={userData.name}
-                      onChange={(e) => setUserData({...userData, name: e.target.value})}
-                      className="input-modern"
-                      placeholder="John Doe"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaEnvelope className="mr-2 text-gray-500" />
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={userData.email}
-                      onChange={(e) => setUserData({...userData, email: e.target.value})}
-                      className="input-modern"
-                      placeholder="john@example.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaUserShield className="mr-2 text-gray-500" />
-                      Account Type
-                    </label>
-                    <select
-                      value={roleData.role}
-                      onChange={(e) => setRoleData({...roleData, role: e.target.value as 'customer' | 'seller'})}
-                      className="input-modern"
-                    >
-                      <option value="customer">Customer</option>
-                      <option value="seller">Seller</option>
-                    </select>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="btn-primary-modern flex items-center justify-center w-full py-3"
-                  >
-                    <FaSave className="mr-2" />
-                    Update Profile & Role
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-
-            {/* Change Password */}
-            <motion.div
-              className="bg-white rounded-xl shadow-sm p-8"
-              variants={itemVariants}
-            >
-              <div className="flex items-center mb-6">
-                <FaKey className="text-blue-600 text-2xl mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Change Password</h2>
-              </div>
-
-              <form onSubmit={handleChangePassword}>
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaLock className="mr-2 text-gray-500" />
-                      Current Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                      className="input-modern"
-                      placeholder="Current password"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaKey className="mr-2 text-gray-500" />
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                      className="input-modern"
-                      placeholder="New password"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2 flex items-center">
-                      <FaKey className="mr-2 text-gray-500" />
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.confirmNewPassword}
-                      onChange={(e) => setPasswordData({...passwordData, confirmNewPassword: e.target.value})}
-                      className="input-modern"
-                      placeholder="Confirm new password"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="btn-primary-modern flex items-center justify-center w-full py-3"
-                  >
-                    <FaKey className="mr-2" />
-                    Change Password
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-
-          {/* Account Stats */}
-          <motion.div
-            className="mt-8 bg-white rounded-xl shadow-sm p-8"
-            variants={itemVariants}
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-3xl font-bold text-blue-600">5</div>
-                <div className="text-gray-600">Orders</div>
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-3xl font-bold text-green-600">$245.89</div>
-                <div className="text-gray-600">Spent</div>
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="text-3xl font-bold text-purple-600">2</div>
-                <div className="text-gray-600">Wishlist Items</div>
+              <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-primary-700 transition-colors">
+                <FaCamera />
+              </button>
+            </div>
+            
+            <div className="mb-2">
+              <h1 className="text-4xl font-display font-bold text-surface-900">{userData.name}</h1>
+              <div className="flex items-center justify-center md:justify-start gap-3 mt-2 text-surface-600 font-medium">
+                <span className="flex items-center gap-1.5"><FaEnvelope className="text-primary-500" /> {userData.email}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1.5 capitalize px-2.5 py-0.5 rounded-md bg-white/50 border border-white/60"><FaUserShield className="text-primary-500" /> {roleData}</span>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 mt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Quick Stats Column (Left) */}
+          <div className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-[2rem] p-6 text-center shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mx-auto mb-3 text-xl"><FaBoxOpen /></div>
+              <p className="text-3xl font-bold text-surface-900">12</p>
+              <p className="text-surface-500 font-medium text-sm">Total Orders</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-[2rem] p-6 text-center shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center mx-auto mb-3 text-xl"><FaWallet /></div>
+              <p className="text-3xl font-bold text-surface-900">$849.50</p>
+              <p className="text-surface-500 font-medium text-sm">Total Spent</p>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-[2rem] p-6 text-center shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3 text-xl"><FaHeart /></div>
+              <p className="text-3xl font-bold text-surface-900">5</p>
+              <p className="text-surface-500 font-medium text-sm">Wishlist Items</p>
+            </motion.div>
+          </div>
+
+          {/* Main Settings Column (Right) */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-[2.5rem] shadow-premium border border-surface-100 overflow-hidden">
+              {/* Tabs */}
+              <div className="flex border-b border-surface-100 bg-surface-50/50 p-2 gap-2">
+                <button 
+                  onClick={() => setActiveTab('general')} 
+                  className={`flex-1 py-3 px-6 rounded-2xl font-bold text-sm transition-all ${activeTab === 'general' ? 'bg-white shadow-sm text-primary-600' : 'text-surface-500 hover:text-surface-900 hover:bg-white/50'}`}
+                >
+                  General Settings
+                </button>
+                <button 
+                  onClick={() => setActiveTab('security')} 
+                  className={`flex-1 py-3 px-6 rounded-2xl font-bold text-sm transition-all ${activeTab === 'security' ? 'bg-white shadow-sm text-primary-600' : 'text-surface-500 hover:text-surface-900 hover:bg-white/50'}`}
+                >
+                  Security
+                </button>
+              </div>
+
+              <div className="p-8 lg:p-10">
+                <AnimatePresence mode="wait">
+                  {/* Messages */}
+                  {(error || successMessage) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className={`p-4 rounded-2xl mb-8 border ${error ? 'bg-red-50 border-red-100 text-red-600' : 'bg-green-50 border-green-100 text-green-600'} font-medium flex items-center gap-3`}
+                    >
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${error ? 'bg-red-100' : 'bg-green-100'}`}>
+                        {error ? '!' : '✓'}
+                      </div>
+                      {error || successMessage}
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'general' ? (
+                    <motion.form key="general" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleUpdateProfile} className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Full Name</label>
+                        <div className="relative">
+                          <input type="text" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} className="input-premium pl-12" required />
+                          <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Email Address</label>
+                        <div className="relative">
+                          <input type="email" value={userData.email} onChange={e => setUserData({...userData, email: e.target.value})} className="input-premium pl-12" required />
+                          <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Account Type</label>
+                        <div className="relative">
+                          <select value={roleData} onChange={e => setRoleData(e.target.value as any)} className="input-premium pl-12 appearance-none">
+                            <option value="customer">Customer</option>
+                            <option value="seller">Seller</option>
+                          </select>
+                          <FaUserShield className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <button type="submit" className="btn-premium-primary w-full !py-4 mt-4">
+                        <FaSave className="mr-2" /> Save Changes
+                      </button>
+                    </motion.form>
+                  ) : (
+                    <motion.form key="security" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleChangePassword} className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Current Password</label>
+                        <div className="relative">
+                          <input type="password" value={passwordData.currentPassword} onChange={e => setPasswordData({...passwordData, currentPassword: e.target.value})} className="input-premium pl-12" required />
+                          <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">New Password</label>
+                        <div className="relative">
+                          <input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} className="input-premium pl-12" required />
+                          <FaKey className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Confirm New Password</label>
+                        <div className="relative">
+                          <input type="password" value={passwordData.confirmNewPassword} onChange={e => setPasswordData({...passwordData, confirmNewPassword: e.target.value})} className="input-premium pl-12" required />
+                          <FaKey className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                        </div>
+                      </div>
+
+                      <button type="submit" className="btn-premium-primary w-full !py-4 mt-4">
+                        <FaKey className="mr-2" /> Update Password
+                      </button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

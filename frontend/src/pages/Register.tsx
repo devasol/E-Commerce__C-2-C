@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash, FaStore } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash, FaStore, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { HiSparkles } from 'react-icons/hi';
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -20,15 +21,9 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     setLoading(true);
     setError('');
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
     try {
       await register(name, email, password, role);
       navigate('/login');
@@ -39,311 +34,194 @@ const Register: React.FC = () => {
     }
   };
 
+  const perks = [
+    'Access to 10,000+ premium products',
+    'Exclusive member discounts & early sales',
+    'Fast, free delivery on orders over $100',
+    'Dedicated 24/7 customer support',
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl w-full mt-16 mx-auto">
+    <div className="min-h-screen bg-surface-50 flex">
+      {/* Left Branding Panel */}
+      <div className="hidden lg:flex lg:w-1/2 mesh-gradient relative overflow-hidden flex-col justify-between p-16">
+        <div className="absolute top-[-10%] left-[-10%] w-80 h-80 bg-primary-600/30 rounded-full blur-3xl animate-blob" />
+        <div className="absolute bottom-[10%] right-[-10%] w-72 h-72 bg-accent-500/20 rounded-full blur-3xl animate-blob" style={{ animationDelay: '3s' }} />
+
+        <Link to="/" className="flex items-center gap-3 relative z-10">
+          <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg">E</div>
+          <span className="text-2xl font-display font-bold text-white">E-Shop</span>
+        </Link>
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-8">
+            <HiSparkles className="text-yellow-300" />
+            Join 50,000+ happy shoppers
+          </div>
+          <h2 className="text-5xl font-display font-bold text-white leading-tight mb-8">
+            Start your<br /><span className="text-primary-300">premium journey</span>
+          </h2>
+          <ul className="space-y-4">
+            {perks.map((p, i) => (
+              <li key={i} className="flex items-center gap-3 text-white/80">
+                <div className="w-6 h-6 rounded-full bg-primary-500/30 border border-primary-400/50 flex items-center justify-center shrink-0">
+                  <FaCheck className="text-primary-300 text-[10px]" />
+                </div>
+                {p}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="glass-card-dark rounded-2xl p-6 relative z-10">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">S</div>
+            <div>
+              <p className="text-white font-semibold text-sm">Sarah K.</p>
+              <p className="text-white/50 text-xs">Verified Buyer</p>
+            </div>
+          </div>
+          <p className="text-white/70 text-sm italic">"The best online shopping experience I've had. The UI is stunning and delivery is always on time!"</p>
+        </div>
+      </div>
+
+      {/* Right Form Panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16 overflow-y-auto">
         <motion.div
-          className="bg-white rounded-2xl shadow-xl overflow-hidden"
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
         >
-          {/* Header Section */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-8 py-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="flex justify-center mb-4"
-            >
-              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full">
-                <FaUser className="h-10 w-10 text-white" />
-              </div>
-            </motion.div>
-            <motion.h2
-              className="text-3xl font-bold text-white"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              Create Account
-            </motion.h2>
-            <motion.p
-              className="mt-2 text-indigo-100"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              Join us today and start your journey
-            </motion.p>
+          <Link to="/" className="flex items-center gap-3 mb-10 lg:hidden">
+            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center font-bold text-white text-xl">E</div>
+            <span className="text-2xl font-display font-bold text-surface-900">E-Shop</span>
+          </Link>
+
+          <div className="mb-10">
+            <h1 className="text-4xl font-display font-bold text-surface-900 mb-2">Create account</h1>
+            <p className="text-surface-500">Already have one?{' '}
+              <Link to="/login" className="text-primary-600 font-semibold hover:text-primary-700">Sign in</Link>
+            </p>
           </div>
 
-          {/* Form Section */}
-          <motion.div
-            className="px-8 py-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            {error && (
-              <motion.div
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <span>{error}</span>
-              </motion.div>
-            )}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium mb-6 flex items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center shrink-0 font-bold">!</div>
+              {error}
+            </motion.div>
+          )}
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Name and Email fields in grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Name Field */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
-                >
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaUser className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 placeholder-gray-500"
-                      placeholder="Enter your name"
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Email Field */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6, duration: 0.3 }}
-                >
-                  <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaEnvelope className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="email-address"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 placeholder-gray-500"
-                      placeholder="Enter email"
-                    />
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Password and Confirm Password fields in grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Password Field */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.7, duration: 0.3 }}
-                >
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaLock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 placeholder-gray-500"
-                      placeholder="Create password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      ) : (
-                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-
-                {/* Confirm Password Field */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8, duration: 0.3 }}
-                >
-                  <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaLock className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="confirm-password"
-                      name="confirm-password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      autoComplete="new-password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 placeholder-gray-500"
-                      placeholder="Confirm password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
-                      {showConfirmPassword ? (
-                        <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      ) : (
-                        <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Role Selection */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9, duration: 0.3 }}
-              >
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  Account Type
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaStore className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select
-                    id="role"
-                    name="role"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as 'customer' | 'seller')}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 appearance-none"
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Account Type Toggle */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Account Type</label>
+              <div className="grid grid-cols-2 gap-3 p-1 bg-surface-100 rounded-2xl">
+                {(['customer', 'seller'] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`flex items-center justify-center gap-2 py-3 rounded-xl font-semibold capitalize transition-all duration-300 ${
+                      role === r
+                        ? 'bg-white shadow-md text-primary-600 ring-2 ring-primary-100'
+                        : 'text-surface-500 hover:text-surface-700'
+                    }`}
                   >
-                    <option value="customer">Customer</option>
-                    <option value="seller">Seller</option>
-                  </select>
-                </div>
-              </motion.div>
+                    {r === 'customer' ? <FaUser className="text-sm" /> : <FaStore className="text-sm" />}
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {/* Terms and Conditions */}
-              <motion.div
-                className="flex items-start"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.9, duration: 0.3 }}
-              >
-                <div className="flex items-center h-5">
-                  <input
-                    id="terms"
-                    name="terms"
-                    type="checkbox"
-                    required
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                </div>
-                <div className="ml-3 text-sm">
-                  <label htmlFor="terms" className="text-gray-700">
-                    I agree to the <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Terms and Conditions</a> and <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
-                  </label>
-                </div>
-              </motion.div>
-
-              {/* Submit Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.0, duration: 0.3 }}
-              >
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-lg hover:shadow-xl ${
-                    loading ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating account...
-                    </div>
-                  ) : (
-                    'Sign up'
-                  )}
-                </button>
-              </motion.div>
-            </form>
-
-            {/* Divider */}
-            <motion.div
-              className="mt-8 mb-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.1, duration: 0.3 }}
-            >
+            {/* Name */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Full Name</label>
               <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or</span>
+                <input
+                  id="name" type="text" autoComplete="name" required
+                  value={name} onChange={e => setName(e.target.value)}
+                  placeholder="John Doe"
+                  className="input-premium pl-12"
+                />
+                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Email</label>
+              <div className="relative">
+                <input
+                  id="email" type="email" autoComplete="email" required
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="input-premium pl-12"
+                />
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+              </div>
+            </div>
+
+            {/* Passwords */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Password</label>
+                <div className="relative">
+                  <input
+                    id="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" required
+                    value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="input-premium pl-12 pr-12"
+                  />
+                  <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-300 hover:text-surface-600 transition-colors">
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
               </div>
-            </motion.div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-surface-600 uppercase tracking-widest">Confirm</label>
+                <div className="relative">
+                  <input
+                    id="confirm-password" type={showConfirmPassword ? 'text' : 'password'} autoComplete="new-password" required
+                    value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="input-premium pl-12 pr-12"
+                  />
+                  <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300" />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-300 hover:text-surface-600 transition-colors">
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+            </div>
 
-            {/* Sign in link */}
-            <motion.div
-              className="mt-8 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.1, duration: 0.3 }}
-            >
-              <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors duration-200">
-                  Sign in
-                </Link>
-              </p>
-            </motion.div>
-          </motion.div>
+            {/* Terms */}
+            <label className="flex items-start gap-3 cursor-pointer group pt-1">
+              <input type="checkbox" required className="mt-1 w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-primary-500" />
+              <span className="text-sm text-surface-600">
+                I agree to the{' '}
+                <Link to="/terms" className="text-primary-600 font-semibold hover:underline">Terms</Link>
+                {' '}and{' '}
+                <Link to="/privacy" className="text-primary-600 font-semibold hover:underline">Privacy Policy</Link>
+              </span>
+            </label>
+
+            <button type="submit" disabled={loading} className="btn-premium-primary w-full !py-4 text-base mt-2">
+              {loading ? (
+                <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />Creating account…</>
+              ) : (
+                <>Create account <FaArrowRight className="ml-1" /></>
+              )}
+            </button>
+          </form>
         </motion.div>
       </div>
     </div>
