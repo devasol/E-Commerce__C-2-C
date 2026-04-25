@@ -21,7 +21,7 @@ const Checkout: React.FC = () => {
   const [existingOrder, setExistingOrder] = useState<any>(null);
   const [loadingExistingOrder, setLoadingExistingOrder] = useState(!!existingOrderId);
   const [orderLoading, setOrderLoading] = useState(false);
-  const { showSuccess, showError } = useNotification();
+  const { showError } = useNotification();
   const [errors, setErrors] = useState<any>({});
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
 
@@ -50,7 +50,7 @@ const Checkout: React.FC = () => {
         setLoadingExistingOrder(false);
       });
     }
-  }, [existingOrderId]);
+  }, [existingOrderId, showError]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -68,7 +68,7 @@ const Checkout: React.FC = () => {
       }, 1000);
     }
     return () => { if (interval) clearInterval(interval); };
-  }, [telebirrStep, countdown]);
+  }, [telebirrStep, countdown, showError]);
 
   const validateForm = () => {
     const newErrors: any = {};
