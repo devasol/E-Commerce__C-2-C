@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaEnvelope, FaLock, FaUserShield, FaSave, FaKey, FaBoxOpen, FaHeart, FaWallet, FaCamera } from 'react-icons/fa';
+import { orderAPI, wishlistAPI } from '../services/api';
 
 const Profile: React.FC = () => {
   const { state: authState, updateProfile, changePassword } = useAuth();
@@ -11,6 +12,8 @@ const Profile: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'security'>('general');
+  const [stats, setStats] = useState({ ordersCount: 0, totalSpent: 0, wishlistCount: 0 });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     if (authState.user) {
@@ -18,6 +21,44 @@ const Profile: React.FC = () => {
       setRoleData((authState.user.role === 'customer' || authState.user.role === 'seller') ? authState.user.role : 'customer');
     }
     document.title = 'My Profile — E-Shop';
+  }, [authState.user]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoadingStats(true);
+        const [ordersRes, wishlistRes] = await Promise.all([
+          orderAPI.getMyOrders().catch(() => ({ data: [] })),
+          wishlistAPI.get().catch(() => ({ data: [] }))
+        ]);
+        
+        const orders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+        const totalSpent = orders.reduce((sum: number, order: any) => sum + (order.totalPrice || 0), 0);
+        
+        let wishlistCount = 0;
+        if (Array.isArray(wishlistRes.data)) {
+          wishlistCount = wishlistRes.data.length;
+        } else if (wishlistRes.data?.products) {
+          wishlistCount = wishlistRes.data.products.length;
+        } else if (wishlistRes.data?.items) {
+          wishlistCount = wishlistRes.data.items.length;
+        }
+
+        setStats({
+          ordersCount: orders.length,
+          totalSpent,
+          wishlistCount
+        });
+      } catch (err) {
+        console.error('Failed to fetch user stats', err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+    
+    if (authState.user) {
+      fetchStats();
+    }
   }, [authState.user]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -100,9 +141,9 @@ const Profile: React.FC = () => {
         {/* Stats Row */}
         <motion.div variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {[
-            { icon: FaBoxOpen, color: 'blue', value: '12', label: 'Total Orders', gradient: 'from-blue-500 to-cyan-400' },
-            { icon: FaWallet, color: 'emerald', value: '$849.50', label: 'Total Spent', gradient: 'from-emerald-500 to-green-400' },
-            { icon: FaHeart, color: 'rose', value: '5', label: 'Wishlist Items', gradient: 'from-rose-500 to-pink-400' }
+            { icon: FaBoxOpen, color: 'blue', value: loadingStats ? '...' : stats.ordersCount.toString(), label: 'Total Orders', gradient: 'from-blue-500 to-cyan-400' },
+            { icon: FaWallet, color: 'emerald', value: loadingStats ? '...' : `$${stats.totalSpent.toFixed(2)}`, label: 'Total Spent', gradient: 'from-emerald-500 to-green-400' },
+            { icon: FaHeart, color: 'rose', value: loadingStats ? '...' : stats.wishlistCount.toString(), label: 'Wishlist Items', gradient: 'from-rose-500 to-pink-400' }
           ].map((stat, i) => (
             <motion.div key={i} variants={floatUp} whileHover={{ y: -5 }} className="bg-white/60 backdrop-blur-3xl rounded-[2.5rem] p-6 lg:p-8 flex items-center gap-6 shadow-premium border border-white/50 group">
               <div className={`w-16 h-16 rounded-2xl bg-gradient-to-tr ${stat.gradient} flex items-center justify-center text-white text-2xl shadow-lg shadow-${stat.color}-500/30 group-hover:scale-110 transition-transform duration-500`}>
