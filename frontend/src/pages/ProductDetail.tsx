@@ -5,11 +5,13 @@ import { FaStar, FaStarHalfAlt, FaRegStar, FaShoppingCart, FaHeart, FaRegHeart, 
 import { useCart } from '../context/CartContext';
 import { productAPI, wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
+import { useNotification } from '../context/NotificationContext';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { showError } = useNotification();
   const [product, setProduct] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -49,7 +51,7 @@ const ProductDetail: React.FC = () => {
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2500);
     } catch (error: any) {
-      alert(error?.message || 'Failed to add item to cart.');
+      showError(error?.message || 'Failed to add item to cart.');
     } finally {
       setCartLoading(false);
     }
@@ -67,7 +69,7 @@ const ProductDetail: React.FC = () => {
         setIsWishlisted(true);
       }
     } catch (error: any) {
-      alert(error?.message || 'Failed to update wishlist.');
+      showError(error?.message || 'Failed to update wishlist.');
     } finally {
       setWishlistLoading(false);
     }

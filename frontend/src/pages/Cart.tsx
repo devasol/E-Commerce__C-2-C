@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { FaTrash, FaPlus, FaMinus, FaShoppingBag, FaArrowRight, FaShieldAlt, FaTruck } from 'react-icons/fa';
+import { useNotification } from '../context/NotificationContext';
 
 interface CartItemProps {
   item: any;
@@ -13,6 +14,7 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ item, index, removeFromCart, updateQuantity }) => {
   const [isLoading, setIsLoading] = React.useState(false);
+  const { showError } = useNotification();
   const productId = typeof item.product === 'object' ? item.product._id : (typeof item.product === 'string' ? item.product : item._id);
   const productName = typeof item.product === 'object' ? item.product.name : 'Product';
   const productImage = typeof item.product === 'object' && item.product.images?.length > 0 ? item.product.images[0] : 'https://via.placeholder.com/100x100';
@@ -21,7 +23,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, index, removeFromCart, update
   const handleRemove = async () => {
     setIsLoading(true);
     try { await removeFromCart(productId); }
-    catch (e: any) { alert(e?.message || 'Failed to remove item.'); }
+    catch (e: any) { showError(e?.message || 'Failed to remove item.'); }
     finally { setIsLoading(false); }
   };
 
@@ -29,7 +31,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, index, removeFromCart, update
     if (qty < 1) { await handleRemove(); return; }
     setIsLoading(true);
     try { await updateQuantity(productId, qty); }
-    catch (e: any) { alert(e?.message || 'Failed to update quantity.'); }
+    catch (e: any) { showError(e?.message || 'Failed to update quantity.'); }
     finally { setIsLoading(false); }
   };
 

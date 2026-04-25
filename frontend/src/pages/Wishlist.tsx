@@ -5,9 +5,11 @@ import { FaTrash, FaShoppingCart, FaHeart, FaArrowRight } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { wishlistAPI } from '../services/api';
 import ImageWithFallback from '../components/ImageWithFallback';
+import { useNotification } from '../context/NotificationContext';
 
 const Wishlist: React.FC = () => {
   const { addToCart } = useCart();
+  const { showSuccess, showError } = useNotification();
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
@@ -49,10 +51,10 @@ const Wishlist: React.FC = () => {
     setLoadingItems(prev => ({ ...prev, [product._id]: true }));
     try {
       await addToCart(product._id, 1);
-      alert(`${product.name} added to cart successfully!`);
+      showSuccess(`${product.name} added to cart successfully!`);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
+      showError('Failed to add item to cart. Please try again.');
     } finally {
       setLoadingItems(prev => {
         const newState = { ...prev };

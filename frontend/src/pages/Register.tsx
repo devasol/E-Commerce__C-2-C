@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaLock, FaEnvelope, FaEye, FaEyeSlash, FaStore, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import { useNotification } from '../context/NotificationContext';
 
 const Register: React.FC = () => {
   const [name, setName] = useState('');
@@ -14,21 +15,20 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { showError } = useNotification();
 
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) { setError('Passwords do not match'); return; }
+    if (password !== confirmPassword) { showError('Passwords do not match'); return; }
     setLoading(true);
-    setError('');
     try {
       await register(name, email, password, role);
       navigate('/login');
     } catch (err: any) {
-      setError(err?.message || 'Registration failed. Please try again.');
+      showError(err?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -120,12 +120,6 @@ const Register: React.FC = () => {
               </p>
             </motion.div>
 
-            {error && (
-              <motion.div variants={itemVariants} className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold mb-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white border border-red-200 text-red-500 flex items-center justify-center shrink-0 shadow-sm">!</div>
-                {error}
-              </motion.div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               

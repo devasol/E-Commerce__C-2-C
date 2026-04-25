@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaEnvelope, FaLock, FaUserShield, FaSave, FaKey, FaBoxOpen, FaHeart, FaWallet, FaCamera } from 'react-icons/fa';
 import { orderAPI, wishlistAPI } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 const Profile: React.FC = () => {
   const { state: authState, updateProfile, changePassword } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [userData, setUserData] = useState({ name: '', email: '' });
   const [roleData, setRoleData] = useState<'customer' | 'seller'>('customer');
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-  const [successMessage, setSuccessMessage] = useState('');
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'general' | 'security'>('general');
   const [stats, setStats] = useState({ ordersCount: 0, totalSpent: 0, wishlistCount: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
@@ -63,30 +63,26 @@ const Profile: React.FC = () => {
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setSuccessMessage('');
     try {
       await updateProfile({ ...userData, role: roleData });
-      setSuccessMessage('Profile updated successfully!');
-      setTimeout(() => setSuccessMessage(''), 4000);
+      showSuccess('Your profile has been updated successfully.');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to update profile');
+      showError(err.response?.data?.message || err.message || 'Failed to update profile');
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setSuccessMessage('');
     if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-      setError('New passwords do not match');
+      showError('New passwords do not match');
       return;
     }
     try {
       await changePassword(passwordData.currentPassword, passwordData.newPassword);
-      setSuccessMessage('Password updated successfully!');
+      showSuccess('Your password has been changed successfully.');
       setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
-      setTimeout(() => setSuccessMessage(''), 4000);
     } catch (err: any) {
-      setError(err.message || 'Failed to change password');
+      showError(err.message || 'Failed to change password');
     }
   };
 
@@ -179,20 +175,6 @@ const Profile: React.FC = () => {
             </div>
 
             <AnimatePresence mode="wait">
-              {/* Alert Toasts */}
-              {(error || successMessage) && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  className={`p-5 rounded-2xl mb-8 border ${error ? 'bg-red-50/80 border-red-200 text-red-700 shadow-red-500/10' : 'bg-emerald-50/80 border-emerald-200 text-emerald-700 shadow-emerald-500/10'} font-bold flex items-center gap-4 shadow-xl backdrop-blur-md`}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border bg-white ${error ? 'border-red-200 text-red-500 shadow-red-200' : 'border-emerald-200 text-emerald-500 shadow-emerald-200'} shadow-inner`}>
-                    {error ? '!' : '✓'}
-                  </div>
-                  {error || successMessage}
-                </motion.div>
-              )}
 
               {activeTab === 'general' ? (
                 <motion.form key="general" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleUpdateProfile} className="space-y-6 max-w-2xl">

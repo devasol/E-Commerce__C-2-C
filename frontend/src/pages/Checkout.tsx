@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { orderAPI, paymentAPI } from '../services/api';
 import axios from 'axios';
 import { FaMobileAlt, FaArrowRight, FaLock, FaShieldAlt } from 'react-icons/fa';
+import { useNotification } from '../context/NotificationContext';
 
 const Checkout: React.FC = () => {
   const { state: cartState, clearCart } = useCart();
@@ -20,8 +21,8 @@ const Checkout: React.FC = () => {
   const [existingOrder, setExistingOrder] = useState<any>(null);
   const [loadingExistingOrder, setLoadingExistingOrder] = useState(!!existingOrderId);
   const [orderLoading, setOrderLoading] = useState(false);
+  const { showSuccess, showError } = useNotification();
   const [errors, setErrors] = useState<any>({});
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
 
 
@@ -45,7 +46,7 @@ const Checkout: React.FC = () => {
         setPaymentMethod('telebirr');
         setLoadingExistingOrder(false);
       }).catch(err => {
-        setErrorMessage('Could not load order details.');
+        showError('Could not load order details.');
         setLoadingExistingOrder(false);
       });
     }
@@ -59,7 +60,7 @@ const Checkout: React.FC = () => {
           if (prev <= 1) {
             setTelebirrStep('form');
             setTelebirrSession(null);
-            setErrorMessage('Payment session expired.');
+            showError('Payment session expired.');
             return 300;
           }
           return prev - 1;
@@ -91,9 +92,8 @@ const Checkout: React.FC = () => {
         if (payRes.data.success) {
           setTelebirrSession(payRes.data.data);
           setTelebirrStep('initiated');
-          setErrorMessage(null);
         } else {
-          setErrorMessage(payRes.data.message || 'Payment initiation failed.');
+          showError(payRes.data.message || 'Payment initiation failed.');
         }
       } else {
         localStorage.setItem('shippingInfo', JSON.stringify(shippingInfo));
@@ -121,25 +121,24 @@ const Checkout: React.FC = () => {
         if (payRes.data.success) {
           setTelebirrSession(payRes.data.data);
           setTelebirrStep('initiated');
-          setErrorMessage(null);
         } else {
-          setErrorMessage(payRes.data.message || 'Payment initiation failed.');
+          showError(payRes.data.message || 'Payment initiation failed.');
         }
       }
     } catch (err: any) {
-      setErrorMessage(err?.response?.data?.message || 'Failed to process order.');
+      showError(err?.response?.data?.message || 'Failed to process order.');
     } finally {
       setOrderLoading(false);
     }
   };
 
   const handleVerify = async () => {
-    if (!telebirrPin || telebirrPin.length !== 4) { setErrorMessage('Enter valid 4-digit PIN'); return; }
+    if (!telebirrPin || telebirrPin.length !== 4) { showError('Enter valid 4-digit PIN'); return; }
     if (!telebirrSession) return;
 
     const orderTotal = existingOrder ? existingOrder.totalPrice : (cartState.totalPrice + 5.99 + (cartState.totalPrice * 0.08));
     if (telebirrBalance < orderTotal) {
-      setErrorMessage(`Insufficient balance: $${telebirrBalance.toFixed(2)}`);
+      showError(`Insufficient balance: $${telebirrBalance.toFixed(2)}`);
       return;
     }
 
@@ -164,13 +163,12 @@ const Checkout: React.FC = () => {
         }
         await clearCart();
         setOrderSuccess({ orderId: vRes.data.data.orderId, message: 'Payment successful! Order confirmed.' });
-        setErrorMessage(null);
       } else {
-        setErrorMessage(vRes.data.message || 'Verification failed.');
+        showError(vRes.data.message || 'Verification failed.');
         setTelebirrStep('initiated');
       }
     } catch (err: any) {
-      setErrorMessage(err?.response?.data?.message || 'Verification failed.');
+      showError(err?.response?.data?.message || 'Verification failed.');
       setTelebirrStep('initiated');
     } finally {
       setOrderLoading(false);
@@ -216,11 +214,6 @@ const Checkout: React.FC = () => {
         <h1 className="text-4xl font-display font-bold text-surface-900 mb-10 text-center">Secure Checkout</h1>
 
         <AnimatePresence mode="wait">
-          {errorMessage && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="p-4 rounded-2xl mb-8 bg-red-50 border border-red-100 text-red-600 font-medium flex justify-center">
-              {errorMessage}
-            </motion.div>
-          )}
 
           {orderSuccess ? (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-xl mx-auto bg-white rounded-[2.5rem] shadow-premium p-12 text-center border border-green-100">

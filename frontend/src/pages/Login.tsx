@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
+import { useNotification } from '../context/NotificationContext';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { showError } = useNotification();
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -18,12 +19,11 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     try {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err?.message || 'Login failed. Please check your credentials.');
+      showError(err?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -114,12 +114,6 @@ const Login: React.FC = () => {
               </p>
             </motion.div>
 
-            {error && (
-              <motion.div variants={itemVariants} className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold mb-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white border border-red-200 text-red-500 flex items-center justify-center shrink-0 shadow-sm">!</div>
-                {error}
-              </motion.div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <motion.div variants={itemVariants} className="space-y-2">
