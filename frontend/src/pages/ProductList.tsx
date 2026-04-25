@@ -57,24 +57,21 @@ const ProductList: React.FC = () => {
   }, [searchParams, searchTerm, category]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchProducts(currentPage);
-  }, [currentPage, searchTerm, category, priceRange, sortBy]);
+  }, [currentPage, searchTerm, category, priceRange, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (currentPage !== 1) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       setCurrentPage(1);
     }
-  }, [searchTerm, category, priceRange, sortBy]);
+  }, [searchTerm, category, priceRange, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (category !== 'all') params.set('category', category);
     setSearchParams(params, { replace: true });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, category]);
+  }, [searchTerm, category]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 

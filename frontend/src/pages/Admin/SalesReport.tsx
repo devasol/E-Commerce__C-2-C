@@ -17,9 +17,8 @@ const SalesReport: React.FC = () => {
   });
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchSalesReport();
-  }, [dateRange]);
+  }, [dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSalesReport = async () => {
     try {

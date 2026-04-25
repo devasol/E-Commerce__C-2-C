@@ -96,10 +96,9 @@ const Cart: React.FC = () => {
   const total = cartState.totalPrice + shipping + tax;
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     loadCart();
     document.title = 'Shopping Cart — E-Shop';
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-surface-50 pt-10 pb-20">
